@@ -1,6 +1,10 @@
 @REM OrcaSlicer build script for Windows
 @echo off
 set WP=%CD%
+set PATH=C:\Strawberry\perl\bin;C:\Program Files\Git\usr\bin;%PATH%
+if exist "C:\Program Files\Microsoft Visual Studio\18\Community\Common7\Tools\VsDevCmd.bat" (
+    call "C:\Program Files\Microsoft Visual Studio\18\Community\Common7\Tools\VsDevCmd.bat" -arch=amd64
+)
 
 @REM Pack deps
 if "%1"=="pack" (
@@ -57,7 +61,7 @@ echo "building deps.."
 echo on
 REM Set minimum CMake policy to avoid <3.5 errors
 set CMAKE_POLICY_VERSION_MINIMUM=3.5
-cmake ../ -G "Visual Studio 17 2022" -A %arch% -DCMAKE_BUILD_TYPE=%build_type%
+cmake ../ -A %arch% -DCMAKE_BUILD_TYPE=%build_type%
 cmake --build . --config %build_type% --target deps -- -m
 @echo off
 
@@ -71,7 +75,7 @@ cd %build_dir%
 
 echo on
 set CMAKE_POLICY_VERSION_MINIMUM=3.5
-cmake .. -G "Visual Studio 17 2022" -A %arch% -DORCA_TOOLS=ON %SIG_FLAG% -DCMAKE_BUILD_TYPE=%build_type%
+cmake .. -A %arch% -DORCA_TOOLS=ON %SIG_FLAG% -DCMAKE_BUILD_TYPE=%build_type%
 cmake --build . --config %build_type% --target ALL_BUILD -- -m
 @echo off
 cd ..

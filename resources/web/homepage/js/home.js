@@ -1,582 +1,573 @@
-//var TestData={"sequence_id":"0","command":"get_recent_projects","response":[{"path":"D:\\work\\Models\\Toy\\3d-puzzle-cube-model_files\\3d-puzzle-cube.3mf","time":"2022\/3\/24 20:33:10"},{"path":"D:\\work\\Models\\Art\\Carved Stone Vase - remeshed+drainage\\Carved Stone Vase.3mf","time":"2022\/3\/24 17:11:51"},{"path":"D:\\work\\Models\\Art\\Kity & Cat\\Cat.3mf","time":"2022\/3\/24 17:07:55"},{"path":"D:\\work\\Models\\Toy\\鐩村墤.3mf","time":"2022\/3\/24 17:06:02"},{"path":"D:\\work\\Models\\Toy\\minimalistic-dual-tone-whistle-model_files\\minimalistic-dual-tone-whistle.3mf","time":"2022\/3\/22 21:12:22"},{"path":"D:\\work\\Models\\Toy\\spiral-city-model_files\\spiral-city.3mf","time":"2022\/3\/22 18:58:37"},{"path":"D:\\work\\Models\\Toy\\impossible-dovetail-puzzle-box-model_files\\impossible-dovetail-puzzle-box.3mf","time":"2022\/3\/22 20:08:40"}]};
-
-var m_HotModelList=null;
-var bambuSectionExpanded = false;
-
-function OnInit()
-{
-	//-----Official-----
-    TranslatePage();
-
-	SendMsg_GetLoginInfo();
-	SendMsg_GetBambuLoginInfo();
-	SendMsg_GetRecentFile();
-	SendMsg_GetStaffPick();
+﻿
+// Theme detection - syncs with app dark/light mode
+function ApplyAppTheme() {
+    var isDark = true; // default dark
+    try {
+        // globalapi.js sets dark mode based on userAgent containing 'dark'
+        var ua = navigator.userAgent || "";
+        isDark = ua.match(/dark/i) !== null;
+    } catch(e) {}
+    
+    if (isDark) {
+        document.body.classList.remove('light');
+        document.body.classList.add('dark');
+    } else {
+        document.body.classList.remove('dark');
+        document.body.classList.add('light');
+    }
 }
 
-//------最佳打开文件的右键菜单功能----------
-var RightBtnFilePath='';
+// Make3D Slicer Modern Homepage Logic & Web Bridge
 
-var MousePosX=0;
-var MousePosY=0;
-var sImages = {};
- 
-function Set_RecentFile_MouseRightBtn_Event()
-{
-	$(".FileItem").mousedown(
-		function(e)
-		{			
-			//FilePath
-			RightBtnFilePath=$(this).attr('fpath');
-			
-			if(e.which == 3){
-				//鼠标点击了右键+$(this).attr('ff') );
-				ShowRecnetFileContextMenu();
-			}else if(e.which == 2){
-				//鼠标点击了中键
-			}else if(e.which == 1){
-				//鼠标点击了左键
-				OnOpenRecentFile( encodeURI(RightBtnFilePath) );
-			}
-		});
+var g_RightBtnFilePath = '';
+var g_RecentFiles = [];
 
-	$(document).bind("contextmenu",function(e){
-		//在这里书写代码，构建个性右键化菜单
-		return false;
-	});	
-	
-    $(document).mousemove( function(e){
-		MousePosX=e.pageX;
-		MousePosY=e.pageY;
-		
-		let ContextMenuWidth=$('#recnet_context_menu').width();
-		let ContextMenuHeight=$('#recnet_context_menu').height();
-	
-		let DocumentWidth=$(document).width();
-		let DocumentHeight=$(document).height();
-		
-		//$("#DebugText").text( ContextMenuWidth+' - '+ContextMenuHeight+'<br/>'+
-		//					 DocumentWidth+' - '+DocumentHeight+'<br/>'+
-		//					 MousePosX+' - '+MousePosY +'<br/>' );
-	} );
-	
+// Base Bridge Messaging to C++
+function SendWXMessage(strMsg) {
+    console.log("[Make3D Web Bridge] SendWXMessage:", strMsg);
+    var sent = false;
 
-	$(document).click( function(){		
-		var e = e || window.event;
-        var elem = e.target || e.srcElement;
-        while (elem) {
-			if (elem.id && elem.id == 'recnet_context_menu') {
-                    return;
-			}
-			elem = elem.parentNode;
-		}		
-		
-		$("#recnet_context_menu").hide();
-	} );
+    // 1. Try window.wx.postMessage
+    try {
+        if (window.wx && typeof window.wx.postMessage === 'function') {
+            window.wx.postMessage(strMsg);
+            sent = true;
+        }
+    } catch(e) {
+        console.warn("[Make3D Web Bridge] wx.postMessage failed:", e);
+    }
 
-	
+    // 2. Try window.chrome.webview.postMessage
+    if (!sent) {
+        try {
+            if (window.chrome && window.chrome.webview && typeof window.chrome.webview.postMessage === 'function') {
+                window.chrome.webview.postMessage(strMsg);
+                sent = true;
+            }
+        } catch(e) {
+            console.warn("[Make3D Web Bridge] chrome.webview.postMessage failed:", e);
+        }
+    }
+
+    // 3. Fallback direct call
+    if (!sent) {
+        try {
+            window.wx.postMessage(strMsg);
+        } catch(e) {}
+    }
+}
+
+function SendSimpleCommand(cmdName) {
+    var payload = {
+        "sequence_id": String(Math.floor(Date.now() / 1000)),
+        "command": cmdName
+    };
+    SendWXMessage(JSON.stringify(payload));
+}
+
+// Button Click Handlers
+function OnClickNewProject() {
+    console.log("[Make3D Home] Clicked New Project");
+    SendSimpleCommand("homepage_newproject");
+}
+
+function OnClickOpenProject() {
+    console.log("[Make3D Home] Clicked Open Project");
+    SendSimpleCommand("homepage_openproject");
+}
+
+function OnLoginOrRegister() {
+    console.log("[Make3D Home] Clicked Login / Register");
+    SendSimpleCommand("homepage_login_or_register");
+}
+
+function OnOpenCloudSync() {
+    console.log("[Make3D Home] Open Cloud Presets / Sync Dialog");
+    SendSimpleCommand("homepage_login_or_register");
+}
+
+function OnLogOut() {
+    console.log("[Make3D Home] Clicked Log Out");
+    try {
+        localStorage.removeItem("make3d_session");
+        sessionStorage.removeItem("make3d_session");
+    } catch(e) {}
+    SetUserOffline();
+    SendSimpleCommand("homepage_logout");
+}
+
+function OpenUrlInLocalBrowser(url) {
+    console.log("[Make3D Home] Open URL:", url);
+    var payload = {
+        "sequence_id": String(Math.floor(Date.now() / 1000)),
+        "command": "open_url_in_local_browser",
+        "data": {
+            "url": url
+        }
+    };
+    SendWXMessage(JSON.stringify(payload));
+}
+
+function GotoMenu(menuName) {
+    console.log("[Make3D Home] GotoMenu:", menuName);
+}
+
+// Recent Files Management
+function SendMsg_GetRecentFile() {
+    SendSimpleCommand("get_recent_projects");
+}
+
+function OnOpenRecentFile(filePath) {
+    console.log("[Make3D Home] Opening recent file:", filePath);
+    var payload = {
+        "sequence_id": String(Math.floor(Date.now() / 1000)),
+        "command": "homepage_open_recentfile",
+        "data": {
+            "path": decodeURIComponent(filePath)
+        }
+    };
+    SendWXMessage(JSON.stringify(payload));
+}
+
+function OnDeleteRecentFile() {
+    $("#recnet_context_menu").hide();
+    if (!g_RightBtnFilePath) return;
+
+    var payload = {
+        "sequence_id": String(Math.floor(Date.now() / 1000)),
+        "command": "homepage_delete_recentfile",
+        "data": {
+            "path": g_RightBtnFilePath
+        }
+    };
+    SendWXMessage(JSON.stringify(payload));
+    SendMsg_GetRecentFile();
+}
+
+function OnDeleteAllRecentFiles() {
+    $("#recnet_context_menu").hide();
+    SendSimpleCommand("homepage_delete_all_recentfile");
+    $('#FileList').empty();
+    $('#EmptyRecentState').show();
+    $('#RecentClearAllBtn').hide();
+    $('#RecentCountBadge').text('0 files');
+}
+
+function OnContextOpenProject() {
+    $("#recnet_context_menu").hide();
+    if (g_RightBtnFilePath) {
+        OnOpenRecentFile(g_RightBtnFilePath);
+    }
+}
+
+function OnExploreRecentFile() {
+    $("#recnet_context_menu").hide();
+    if (!g_RightBtnFilePath) return;
+
+    var payload = {
+        "sequence_id": String(Math.floor(Date.now() / 1000)),
+        "command": "homepage_explore_recentfile",
+        "data": {
+            "path": decodeURIComponent(g_RightBtnFilePath)
+        }
+    };
+    SendWXMessage(JSON.stringify(payload));
+}
+
+// Render Recent Projects in UI
+function ShowRecentList(recentList) {
+    if (!Array.isArray(recentList)) {
+        try {
+            recentList = JSON.parse(recentList);
+        } catch(e) {
+            recentList = [];
+        }
+    }
+
+    g_RecentFiles = recentList || [];
+    var $list = $('#FileList');
+    $list.empty();
+
+    if (!recentList || recentList.length === 0) {
+        $('#EmptyRecentState').show();
+        $('#RecentClearAllBtn').hide();
+        $('#RecentCountBadge').text('0 files');
+        return;
+    }
+
+    $('#EmptyRecentState').hide();
+    $('#RecentClearAllBtn').show();
+    $('#RecentCountBadge').text(recentList.length + ' file' + (recentList.length > 1 ? 's' : ''));
+
+    recentList.forEach(function(item) {
+        var filePath = item.path || '';
+        var fileName = filePath.split(/[\\/]/).pop() || filePath;
+        var fileTime = item.time || '';
+        var coverImg = item.image || item.cover || item.thumbnail || 'img/d.png';
+
+        var cardHtml = '<div class="file-item-card" fpath="' + encodeURIComponent(filePath) + '">' +
+            '<div class="file-thumb-box"><img src="' + coverImg + '" class="file-thumb-img" onerror="this.src=\'img/d.png\'"/></div>' +
+            '<div class="file-meta">' +
+                '<div class="file-name-text" title="' + filePath + '">' + fileName + '</div>' +
+                '<div class="file-date-text">' + fileTime + '</div>' +
+            '</div>' +
+        '</div>';
+
+        $list.append(cardHtml);
+    });
+
+    // Bind item click and right click
+    $('.file-item-card').off('mousedown').on('mousedown', function(e) {
+        var rawPath = $(this).attr('fpath');
+        g_RightBtnFilePath = decodeURIComponent(rawPath);
+
+        if (e.which === 3) {
+            // Right click: show context menu
+            e.preventDefault();
+            $('#recnet_context_menu').css({
+                top: e.pageY + 'px',
+                left: e.pageX + 'px'
+            }).show();
+        } else if (e.which === 1) {
+            // Left click: open file
+            OnOpenRecentFile(rawPath);
+        }
+    });
+}
+
+// User Profile & Status Sync
+function SetLoginInfo(avatar, username) {
+    if (username && String(username).trim() !== '' && String(username).trim() !== 'undefined' && String(username).trim() !== 'Guest User') {
+        var displayName = String(username).trim();
+        // Truncate long email addresses gracefully
+        if (displayName.indexOf('@') !== -1) {
+            displayName = displayName.split('@')[0];
+        }
+        if (displayName.length > 20) {
+            displayName = displayName.substring(0, 18) + '...';
+        }
+        var nickEl = document.getElementById('UserNickName');
+        if (nickEl) nickEl.textContent = displayName;
+        
+        // Show real avatar if available, else show SVG fallback
+        var imgEl = document.getElementById('UserAvatarImg');
+        var svgEl = document.getElementById('UserAvatarSvg');
+        if (avatar && String(avatar).trim() !== '' && String(avatar).trim() !== 'undefined') {
+            if (imgEl) { imgEl.src = avatar; imgEl.style.display = 'block'; }
+            if (svgEl) svgEl.style.display = 'none';
+        } else {
+            if (imgEl) imgEl.style.display = 'none';
+            if (svgEl) svgEl.style.display = 'flex';
+        }
+        
+        // Force display with priority
+        var lb = document.getElementById('LoginBlock');
+        var ob = document.getElementById('LogoutBlock');
+        if (lb) lb.style.setProperty('display', 'none', 'important');
+        if (ob) ob.style.setProperty('display', 'flex', 'important');
+    } else {
+        SetUserOffline();
+    }
+}
+
+function SetUserOffline() {
+    var nickEl = document.getElementById('UserNickName');
+    if (nickEl) nickEl.textContent = 'Guest User';
+    var imgEl = document.getElementById('UserAvatarImg');
+    var svgEl = document.getElementById('UserAvatarSvg');
+    if (imgEl) imgEl.style.display = 'none';
+    if (svgEl) svgEl.style.display = 'flex';
+    var lb = document.getElementById('LoginBlock');
+    var ob = document.getElementById('LogoutBlock');
+    if (ob) ob.style.setProperty('display', 'none', 'important');
+    if (lb) lb.style.setProperty('display', 'flex', 'important');
 }
 
 function SetLoginPanelVisibility(visible) {
-  var leftBoard = document.getElementById("LeftBoard");
-  leftBoard.style.display = "block";
-}
-
-function HandleStudio( pVal )
-{
-	let strCmd = pVal['command'];
-	
-	if (strCmd == "get_recent_projects") {
-    ShowRecentFileList(pVal["response"]);
-  } else if (strCmd == "orca_userlogin") {
-    SetOrcaLoginInfo(pVal["data"]["avatar"], pVal["data"]["name"]);
-  } else if (strCmd == "orca_useroffline") {
-    SetOrcaUserOffline();
-  } else if (strCmd == "studio_bambu_userlogin") {
-    SetBambuLoginInfo(pVal["data"]["avatar"], pVal["data"]["name"]);
-  } else if (strCmd == "studio_bambu_useroffline") {
-    SetBambuUserOffline();
-  } else if (strCmd == "studio_set_mallurl") {
-    SetMallUrl(pVal["data"]["url"]);
-  } else if (strCmd == "studio_clickmenu") {
-    let strName = pVal["data"]["menu"];
-
-    GotoMenu(strName);
-  } else if (strCmd == "cloud_providers_info") {
-    var providers = (pVal["data"] && pVal["data"]["providers"]) || [];
-
-    if (providers.indexOf("bbl") >= 0) {
-      $("#BambuCloudSection").show();
-    } else {
-      SetBambuUserOffline();
-      $("#BambuCloudSection").hide();
+    if (visible) {
+        $('#LeftBoard').show();
     }
+}
 
-    if (providers.indexOf("orca") >= 0) {
-      $("#LeftBoard").show();
-    } else {
-      $("#LeftBoard").hide();
+// Unified C++ to JS Dispatcher
+
+// ══════════════════════════════════════════════════════════════════════════
+// Make3D Cloud Auto-Sync (runs in homepage WebView - always alive)
+// ══════════════════════════════════════════════════════════════════════════
+var SUPABASE_URL = "https://mgcmgpydsuhrzesioqgy.supabase.co";
+var SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1nY21ncHlkc3Vocnplc2lvcWd5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY5NDQwMjEsImV4cCI6MjEwMjUyMDAyMX0.RbERZ5MZ-gSqxT05Q53dUoCeS3H9BVbeJt0FGtlPChs";
+
+// Throttle: avoid spamming uploads (wait 3 seconds after last save)
+var _uploadTimer = null;
+
+// ── Auto-Download on startup/login ────────────────────────────────────────
+function AutoDownloadFromCloud() {
+    try {
+        var raw = localStorage.getItem("make3d_session") || sessionStorage.getItem("make3d_session");
+        if (!raw) return;
+        var session = JSON.parse(raw);
+        if (!session || !session.access_token) return;
+        if (session.expires_at && (Date.now() / 1000) > session.expires_at) return;
+        var userId = (session.user && (session.user.id || session.user.uid)) ? (session.user.id || session.user.uid) : "";
+        console.log("[Make3D AutoSync] Auto-downloading presets from cloud...");
+        fetch(SUPABASE_URL + "/rest/v1/user_presets?select=*", {
+            headers: {
+                "apikey": SUPABASE_KEY,
+                "Authorization": "Bearer " + session.access_token
+            }
+        }).then(function(r) {
+            return r.json();
+        }).then(function(rows) {
+            if (!rows || !rows.length) { console.log("[Make3D AutoSync] No cloud presets found."); return; }
+            var presets = rows.map(function(p) {
+                return {
+                    preset_type: p.preset_type,
+                    preset_name: p.preset_name,
+                    preset_data: p.config_json || p.preset_data || {}
+                };
+            });
+            console.log("[Make3D AutoSync] Importing " + presets.length + " presets from cloud");
+            SendWXMessage(JSON.stringify({
+                command: "import_cloud_presets",
+                presets: presets,
+                user_id: userId
+            }));
+        }).catch(function(e) {
+            console.warn("[Make3D AutoSync] Download failed:", e);
+        });
+    } catch(e) {
+        console.warn("[Make3D AutoSync] AutoDownloadFromCloud error:", e);
     }
-  } else if (strCmd == "network_plugin_installtip") {
-    let nShow = pVal["show"] * 1;
+}
 
-    if (nShow == 1) {
-      // Auto-expand Bambu section to show the tip
-      if (!bambuSectionExpanded) ToggleBambuSection();
-      $("#BambuLogin1").hide();
-      $("#NoPluginTip").show();
-      $("#NoPluginTip").css("display", "flex");
-    } else {
-      $("#NoPluginTip").hide();
-      // Only restore login button if not already logged in
-      if ($("#BambuLogin2").is(":hidden")) {
-        $("#BambuLogin1").show();
-      }
+// ── Auto-Upload (called after preset save) ───────────────────────────────
+function TriggerAutoUpload() {
+    // Debounce: wait 3s after last trigger to avoid spamming
+    if (_uploadTimer) clearTimeout(_uploadTimer);
+    _uploadTimer = setTimeout(function() {
+        _uploadTimer = null;
+        DoAutoUpload();
+    }, 3000);
+}
+
+function DoAutoUpload() {
+    try {
+        var raw = localStorage.getItem("make3d_session") || sessionStorage.getItem("make3d_session");
+        if (!raw) return;
+        var session = JSON.parse(raw);
+        if (!session || !session.access_token) return;
+        if (session.expires_at && (Date.now() / 1000) > session.expires_at) return;
+        var userId = (session.user && (session.user.id || session.user.uid)) ? (session.user.id || session.user.uid) : "";
+        console.log("[Make3D AutoSync] Auto-uploading presets to cloud...");
+        // Ask C++ for the local preset JSON, then upload
+        var seqId = "autosync_" + Date.now();
+        _pendingAutoUploadSeq = seqId;
+        _pendingAutoUploadSession = session;
+        SendWXMessage(JSON.stringify({
+            command: "get_user_presets_json",
+            sequence_id: seqId,
+            user_id: userId
+        }));
+    } catch(e) {
+        console.warn("[Make3D AutoSync] DoAutoUpload error:", e);
     }
-  } else if (strCmd == "modelmall_model_advise_get") {
-    //alert('hot');
-    if (m_HotModelList != null) {
-      let SS1 = JSON.stringify(pVal["hits"]);
-      let SS2 = JSON.stringify(m_HotModelList);
+}
 
-      if (SS1 == SS2) return;
+var _pendingAutoUploadSeq = null;
+var _pendingAutoUploadSession = null;
+
+// Upload presets received from C++ to Supabase
+function UploadPresetsToCloud(presets, session) {
+    if (!presets || !presets.length || !session) return;
+    var userId = (session.user && (session.user.id || session.user.uid)) ? (session.user.id || session.user.uid) : "";
+    var uploaded = 0;
+    var total = presets.length;
+
+    presets.forEach(function(p) {
+        var preset_type = p.preset_type || "";
+        var preset_name = p.preset_name || "";
+        var config_json = p.preset_data || {};
+        // Build a stable setting_id
+        var setting_id = (userId + "_" + preset_type + "_" + preset_name).replace(/[^a-zA-Z0-9_\-]/g, "_");
+
+        fetch(SUPABASE_URL + "/rest/v1/user_presets", {
+            method: "POST",
+            headers: {
+                "apikey": SUPABASE_KEY,
+                "Authorization": "Bearer " + session.access_token,
+                "Content-Type": "application/json",
+                "Prefer": "resolution=merge-duplicates,return=minimal"
+            },
+            body: JSON.stringify({
+                user_id: userId,
+                preset_type: preset_type,
+                preset_name: preset_name,
+                setting_id: setting_id,
+                config_json: config_json
+            })
+        }).then(function(r) {
+            uploaded++;
+            if (uploaded === total) {
+                console.log("[Make3D AutoSync] Uploaded " + uploaded + " presets to cloud");
+            }
+        }).catch(function(e) {
+            console.warn("[Make3D AutoSync] Upload preset failed:", preset_name, e);
+        });
+    });
+}
+
+function HandleStudio(data) {
+    console.log("[Make3D Web Bridge] Received from C++:", data);
+    var obj = data;
+    if (typeof data === 'string') {
+        try {
+            obj = JSON.parse(data);
+        } catch(e) {
+            return;
+        }
     }
+    if (!obj || !obj.command) return;
 
-    m_HotModelList = pVal["hits"];
-    ShowStaffPick(m_HotModelList);
-  } else if (strCmd == "SetLoginPanelVisibility") {
-    SetLoginPanelVisibility(pVal["data"]["visible"]);
-  }
+    var cmd = obj.command;
+    if (cmd === 'get_recent_projects' || cmd === 'recent_projects_response') {
+        ShowRecentList(obj.response || obj.data || []);
+    } else if (cmd === 'get_login_info' || cmd === 'login_info_response' || cmd === 'user_login') {
+        if (obj.session_raw) {
+            try {
+                var sStr = typeof obj.session_raw === 'string' ? obj.session_raw : JSON.stringify(obj.session_raw);
+                localStorage.setItem("make3d_session", sStr);
+                sessionStorage.setItem("make3d_session", sStr);
+            } catch(e) {}
+        }
+        var targetName = obj.name || obj.nickname || obj.user_name || obj.email;
+        if (obj.is_login || obj.login || (targetName && targetName.trim() !== '' && targetName.trim() !== 'Guest User')) {
+            SetLoginInfo(obj.avatar, targetName);
+        } else {
+            var raw = localStorage.getItem("make3d_session") || sessionStorage.getItem("make3d_session");
+            if (!raw) {
+                SetUserOffline();
+            }
+        }
+    } else if (cmd === 'orca_userlogin') {
+        if (obj.data) {
+            SetLoginInfo(obj.data.avatar, obj.data.name);
+        }
+    }
+    // ── Make3D Auto-Sync handlers ──────────────────────────────────────────
+    else if (cmd === 'trigger_cloud_download') {
+        // C++ triggers this on user_login to auto-download
+        AutoDownloadFromCloud();
+    }
+    else if (cmd === 'trigger_cloud_upload') {
+        // C++ triggers this when a preset is saved
+        TriggerAutoUpload();
+    }
+    else if (cmd === 'presets_data') {
+        // Response to get_user_presets_json - handle auto-upload
+        if (obj.sequence_id && _pendingAutoUploadSeq && obj.sequence_id === _pendingAutoUploadSeq) {
+            _pendingAutoUploadSeq = null;
+            var session = _pendingAutoUploadSession;
+            _pendingAutoUploadSession = null;
+            if (obj.presets && obj.presets.length > 0 && session) {
+                UploadPresetsToCloud(obj.presets, session);
+            }
+        }
+    }
 }
 
-function GotoMenu( strMenu )
-{
-	let MenuList=$(".BtnItem");
-	let nAll=MenuList.length;
-	
-	for(let n=0;n<nAll;n++)
-	{
-		let OneBtn=MenuList[n];
-		
-		if( $(OneBtn).attr("menu")==strMenu )
-		{
-			$(".BtnItem").removeClass("BtnItemSelected");			
-			
-			$(OneBtn).addClass("BtnItemSelected");
-			
-			$("div[board]").hide();
-			$("div[board=\'"+strMenu+"\']").show();
-		}
-	}
-}
-
-function SetOrcaLoginInfo( strAvatar, strName )
-{
-	$("#OrcaLogin1").hide();
-	$("#OrcaStatusText").hide();
-
-	$("#UserName").text(strName);
-
-    let OriginAvatar=$("#UserAvatarIcon").prop("src");
-	if(strAvatar != null && strAvatar.trim() !== '' && strAvatar!=OriginAvatar)
-		$("#UserAvatarIcon").prop("src",strAvatar);
-	else
-	{
-		//alert('Avatar is Same');
-	}
-
-	$("#OrcaLogin2").show();
-	$("#OrcaLogin2").css("display","flex");
-}
-
-function SetOrcaUserOffline()
-{
-	$("#UserAvatarIcon").prop("src","img/c.jpg");
-	$("#UserName").text('');
-	$("#OrcaLogin2").hide();
-
-	$("#OrcaLogin1").show();
-	$("#OrcaLogin1").css("display","flex");
-	$("#OrcaStatusText").show();
-}
-
-function SetMallUrl( strUrl )
-{
-	$("#MallWeb").prop("src",strUrl);
-}
-
-
-function ShowRecentFileList( pList )
-{
-	let nTotal=pList.length;
-	
-	let strHtml='';
-	for(let n=0;n<nTotal;n++)
-	{
-		let OneFile=pList[n];
-		
-		let sPath=OneFile['path'];
-		let sImg=OneFile["image"] || sImages[sPath];
-		let sTime=OneFile['time'];
-		let sName=OneFile['project_name'];
-		sImages[sPath] = sImg;
-		
-		//let index=sPath.lastIndexOf('\\')>0?sPath.lastIndexOf('\\'):sPath.lastIndexOf('\/');
-		//let sShortName=sPath.substring(index+1,sPath.length);
-		
-		let TmpHtml='<div class="FileItem"  fpath="'+sPath+'"  >'+
-				'<a class="FileTip" title="'+sPath+'"></a>'+
-				'<div class="FileImg" ><img src="'+sImg+'" onerror="this.onerror=null;this.src=\'img/d.png\';"  alt="No Image"  /></div>'+
-				'<div class="FileName TextS1">'+sName+'</div>'+
-				'<div class="FileDate">'+sTime+'</div>'+
-			    '</div>';
-		
-		strHtml+=TmpHtml;
-	}
-	
-	$("#FileList").html(strHtml);	
-	
-    Set_RecentFile_MouseRightBtn_Event();
-	UpdateRecentClearBtnDisplay();
-}
-
-function ShowRecnetFileContextMenu()
-{
-	$("#recnet_context_menu").offset({top: 10000, left:-10000});
-	$('#recnet_context_menu').show();
-	
-	let ContextMenuWidth=$('#recnet_context_menu').width();
-	let ContextMenuHeight=$('#recnet_context_menu').height();
-	
-    let DocumentWidth=$(document).width();
-	let DocumentHeight=$(document).height();
-
-	let RealX=MousePosX;
-	let RealY=MousePosY;
-	
-	if( MousePosX + ContextMenuWidth + 24 >DocumentWidth )
-		RealX=DocumentWidth-ContextMenuWidth-24;
-	if( MousePosY+ContextMenuHeight+24>DocumentHeight )
-		RealY=DocumentHeight-ContextMenuHeight-24;
-	
-	$("#recnet_context_menu").offset({top: RealY, left:RealX});
-}
-
-/*-------RecentFile MX Message------*/
-function SendMsg_GetLoginInfo()
-{
-	var tSend={};
-	tSend['sequence_id']=Math.round(new Date() / 1000);
-	tSend['command']="get_login_info";
-	
-	SendWXMessage( JSON.stringify(tSend) );	
-}
-
-function SendSimpleCommand(command) {
-  var tSend = {};
-  tSend['sequence_id'] = Math.round(new Date() / 1000);
-  tSend['command'] = command;
-  SendWXMessage(JSON.stringify(tSend));
-}
-
-function OnOrcaLoginOrRegister() { SendSimpleCommand("homepage_orca_login_or_register"); }
-function OnOrcaLogOut() { SendSimpleCommand("homepage_orca_logout"); }
-function SendMsg_GetOrcaLoginInfo() { SendSimpleCommand("get_orca_login_info"); }
-
-
-function SendMsg_GetRecentFile()
-{
-	var tSend={};
-	tSend['sequence_id']=Math.round(new Date() / 1000);
-	tSend['command']="get_recent_projects";
-	
-	SendWXMessage( JSON.stringify(tSend) );
-}
-
-
-function OnLoginOrRegister()
-{
-	var tSend={};
-	tSend['sequence_id']=Math.round(new Date() / 1000);
-	tSend['command']="homepage_login_or_register";
-	
-	SendWXMessage( JSON.stringify(tSend) );	
-}
-
-function OnClickModelDepot()
-{
-	var tSend={};
-	tSend['sequence_id']=Math.round(new Date() / 1000);
-	tSend['command']="homepage_modeldepot";
-	
-	SendWXMessage( JSON.stringify(tSend) );		
-}
-
-function OnClickNewProject()
-{
-	var tSend={};
-	tSend['sequence_id']=Math.round(new Date() / 1000);
-	tSend['command']="homepage_newproject";
-	
-	SendWXMessage( JSON.stringify(tSend) );		
-}
-
-function OnClickOpenProject()
-{
-	var tSend={};
-	tSend['sequence_id']=Math.round(new Date() / 1000);
-	tSend['command']="homepage_openproject";
-	
-	SendWXMessage( JSON.stringify(tSend) );		
-}
-
-function OnOpenRecentFile( strPath )
-{
-	var tSend={};
-	tSend['sequence_id']=Math.round(new Date() / 1000);
-	tSend['command']="homepage_open_recentfile";
-	tSend['data']={};
-	tSend['data']['path']=decodeURI(strPath);
-	
-	SendWXMessage( JSON.stringify(tSend) );	
-}
-
-function OnDeleteRecentFile( )
-{
-	//Clear in UI
-	$("#recnet_context_menu").hide();
-	
-	let AllFile=$(".FileItem");
-	let nFile=AllFile.length;
-	for(let p=0;p<nFile;p++)
-	{
-		let pp=AllFile[p].getAttribute("fpath");
-		if(pp==RightBtnFilePath)
-			$(AllFile[p]).remove();
-	}	
-	
-	UpdateRecentClearBtnDisplay();
-	
-	//Send Msg to C++
-	var tSend={};
-	tSend['sequence_id']=Math.round(new Date() / 1000);
-	tSend['command']="homepage_delete_recentfile";
-	tSend['data']={};
-	tSend['data']['path']=RightBtnFilePath;
-	
-	SendWXMessage( JSON.stringify(tSend) );
-}
-
-function OnDeleteAllRecentFiles()
-{
-	$('#FileList').html('');
-	UpdateRecentClearBtnDisplay();
-	
-	var tSend={};
-	tSend['sequence_id']=Math.round(new Date() / 1000);
-	tSend['command']="homepage_delete_all_recentfile";
-	
-	SendWXMessage( JSON.stringify(tSend) );
-}
-
-function UpdateRecentClearBtnDisplay()
-{
-    let AllFile=$(".FileItem");
-	let nFile=AllFile.length;	
-	if( nFile>0 )
-		$("#RecentClearAllBtn").show();
-	else
-		$("#RecentClearAllBtn").hide();
-}
-
-
-
-
-function OnExploreRecentFile( )
-{
-	var tSend={};
-	tSend['sequence_id']=Math.round(new Date() / 1000);
-	tSend['command']="homepage_explore_recentfile";
-	tSend['data']={};
-	tSend['data']['path']=decodeURI(RightBtnFilePath);
-	
-	SendWXMessage( JSON.stringify(tSend) );	
-	
-	$("#recnet_context_menu").hide();
-}
-
-function OnLogOut()
-{
-	var tSend={};
-	tSend['sequence_id']=Math.round(new Date() / 1000);
-	tSend['command']="homepage_logout";
-
-	SendWXMessage( JSON.stringify(tSend) );
-}
-
-// --- Bambu Cloud Section ---
-
-function ToggleBambuSection() {
-  var body = document.getElementById('BambuCloudBody');
-  var chevron = document.querySelector('.bambu-chevron');
-  if (!body || !chevron) return;
-  bambuSectionExpanded = !bambuSectionExpanded;
-  if (bambuSectionExpanded) {
-    body.classList.add('expanded');
-    chevron.classList.add('expanded');
-  } else {
-    body.classList.remove('expanded');
-    chevron.classList.remove('expanded');
-  }
-}
-
-function SetBambuLoginInfo(strAvatar, strName) {
-  $("#BambuLogin1").hide();
-  $("#BambuUserName").text(strName);
-  if (strAvatar && strAvatar.trim() !== '') {
-    $("#BambuAvatarIcon").prop("src", strAvatar);
-  }
-  $("#BambuLogin2").show();
-  $("#BambuLogin2").css("display", "flex");
-  $(".bambu-status-dot").addClass("online");
-  $("#BambuStatusText").text("Connected");
-  $("#BambuStatusText").attr("tid", "orca11");
-}
-
-function SetBambuUserOffline() {
-  $("#BambuAvatarIcon").prop("src", "img/c.jpg");
-  $("#BambuUserName").text('');
-  $("#BambuLogin2").hide();
-  if ($("#NoPluginTip").is(":hidden")) {
-    $("#BambuLogin1").show();
-    $("#BambuLogin1").css("display", "flex");
-  }
-  $(".bambu-status-dot").removeClass("online");
-  $("#BambuStatusText").text("Not connected");
-  $("#BambuStatusText").attr("tid", "orca10");
-}
-
-function OnBambuLoginOrRegister() { SendSimpleCommand("homepage_bambu_login_or_register"); }
-function OnBambuLogOut() { SendSimpleCommand("homepage_bambu_logout"); }
-function SendMsg_GetBambuLoginInfo() { SendSimpleCommand("get_bambu_login_info"); }
-
-function BeginDownloadNetworkPlugin()
-{
-	var tSend={};
-	tSend['sequence_id']=Math.round(new Date() / 1000);
-	tSend['command']="begin_network_plugin_download";
-	
-	SendWXMessage( JSON.stringify(tSend) );		
-}
-
-function OutputKey(keyCode, isCtrlDown, isShiftDown, isCmdDown) {
-	var tSend = {};
-	tSend['sequence_id'] = Math.round(new Date() / 1000);
-	tSend['command'] = "get_web_shortcut";
-	tSend['key_event'] = {};
-	tSend['key_event']['key'] = keyCode;
-	tSend['key_event']['ctrl'] = isCtrlDown;
-	tSend['key_event']['shift'] = isShiftDown;
-	tSend['key_event']['cmd'] = isCmdDown;
-
-	SendWXMessage(JSON.stringify(tSend));
-}
-
-//-------------User Manual------------
-
-function OpenWikiUrl( strUrl )
-{
-	var tSend={};
-	tSend['sequence_id']=Math.round(new Date() / 1000);
-	tSend['command']="userguide_wiki_open";
-	tSend['data']={};
-	tSend['data']['url']=strUrl;
-	
-	SendWXMessage( JSON.stringify(tSend) );	
-}
-
-//--------------Staff Pick-------
-var StaffPickSwiper=null;
-function InitStaffPick()
-{
-	if( StaffPickSwiper!=null )
-	{
-		StaffPickSwiper.destroy(true,true);
-		StaffPickSwiper=null;
-	}	
-	
-	StaffPickSwiper = new Swiper('#HotModel_Swiper.swiper', {
-            slidesPerView : 'auto',
-		    spaceBetween: 16,
-			navigation: {
-				nextEl: '.swiper-button-next',
-				prevEl: '.swiper-button-prev',
-			},
-		    slidesPerView : 'auto',
-		    slidesPerGroup : 3
-
-			});
-}
-
-function SendMsg_GetStaffPick()
-{
-	var tSend={};
-	tSend['sequence_id']=Math.round(new Date() / 1000);
-	tSend['command']="modelmall_model_advise_get";
-	
-	SendWXMessage( JSON.stringify(tSend) );
-	
-	setTimeout("SendMsg_GetStaffPick()",3600*1000*1);
-}
-
-function ShowStaffPick( ModelList )
-{
-	let PickTotal=ModelList.length;
-	if(PickTotal==0)
-	{
-		$('#HotModelList').html('');
-		$('#HotModelArea').hide();
-		
-		return;
-	}
-	
-	let strPickHtml='';
-	for(let a=0;a<PickTotal;a++)
-	{
-		let OnePickModel=ModelList[a];
-		
-		let ModelID=OnePickModel['design']['id'];
-		let ModelName=OnePickModel['design']['title'];
-		let ModelCover=OnePickModel['design']['cover']+'?image_process=resize,w_200/format,webp';
-		
-		let DesignerName=OnePickModel['design']['designCreator']['name'];
-		let DesignerAvatar=OnePickModel['design']['designCreator']['avatar']+'?image_process=resize,w_32/format,webp';
-		
-		strPickHtml+='<div class="HotModelPiece swiper-slide"  onClick="OpenOneStaffPickModel('+ModelID+')" >'+
-			    '<div class="HotModel_Designer_Info"><img src="'+DesignerAvatar+'" /><span class="TextS2">'+DesignerName+'</span></div>'+
-				'	<div class="HotModel_PrevBlock"><img class="HotModel_PrevImg" src="'+ModelCover+'" /></div>'+
-				'	<div  class="HotModel_NameText TextS1" title="'+ModelName+'">'+ModelName+'</div>'+
-				'</div>';
-	}
-	
-	$('#HotModelList').html(strPickHtml);
-	InitStaffPick();
-	$('#HotModelArea').show();
-}
-
-function OpenOneStaffPickModel( ModelID )
-{
-	//alert(ModelID);
-	var tSend={};
-	tSend['sequence_id']=Math.round(new Date() / 1000);
-	tSend['command']="modelmall_model_open";
-	tSend['data']={};
-	tSend['data']['id']=ModelID;
-	
-	SendWXMessage( JSON.stringify(tSend) );		
-}
-
-
-//---------------Global-----------------
+// Global Message Listener for C++
 window.postMessage = HandleStudio;
+window.addEventListener('message', function(e) {
+    if (e.data) {
+        HandleStudio(e.data);
+    }
+});
 
+// Document Click for Context Menu Dismiss
+$(document).on('click', function(e) {
+    if (!$(e.target).closest('#recnet_context_menu').length) {
+        $('#recnet_context_menu').hide();
+    }
+});
+
+$(document).on('contextmenu', function(e) {
+    if (!$(e.target).closest('.file-item-card').length) {
+        $('#recnet_context_menu').hide();
+    }
+    return false;
+});
+
+// Page Initialization
+
+// ── Make3D Cloud: Supabase session sync ──────────────────────────────────
+// The auth dialog stores the session in localStorage as "make3d_session"
+// We read it here to show the user's name/status on the homepage sidebar.
+function CheckSupabaseSession() {
+    try {
+        var raw = localStorage.getItem("make3d_session") || sessionStorage.getItem("make3d_session");
+        if (!raw) {
+            return;
+        }
+        var session = JSON.parse(raw);
+        if (!session || !session.access_token) { return; }
+        // Check expiry
+        if (session.expires_at && (Date.now() / 1000) > session.expires_at) {
+            return;
+        }
+        // User is logged in via Supabase
+        var email = (session.user && session.user.email) ? session.user.email : "";
+        var displayName = email.indexOf("@") !== -1 ? email.split("@")[0] : email;
+        if (!displayName && session.user && session.user.name) displayName = session.user.name;
+        if (!displayName) displayName = "Make3D User";
+        SetLoginInfo("", displayName);
+        var userId = (session.user && (session.user.id || session.user.uid)) ? (session.user.id || session.user.uid) : "";
+        if (userId) {
+            SendWXMessage(JSON.stringify({
+                command: "homepage_check_user",
+                user_id: userId,
+                user_name: displayName,
+                email: email
+            }));
+        }
+    } catch(e) {
+        console.log("[Make3D Home] CheckSupabaseSession error:", e);
+    }
+}
+
+function OnInit() {
+    console.log("[Make3D Home] OnInit loaded");
+    ApplyAppTheme();
+    if (typeof TranslatePage === 'function') {
+        try { TranslatePage(); } catch(e) {}
+    }
+    try { if (typeof SwitchDarkMode === 'function') { SwitchDarkMode('../css/dark.css'); } } catch(e) {}
+    // Check Supabase session first (our Make3D Cloud login)
+    CheckSupabaseSession();
+    // Also check legacy Orca cloud agent
+    SendSimpleCommand("get_login_info");
+    SendMsg_GetRecentFile();
+    // Re-check after 2s in case auth dialog just closed
+    setTimeout(CheckSupabaseSession, 2000);
+    // Auto-download cloud presets on startup if already signed in
+    setTimeout(AutoDownloadFromCloud, 3000);
+}
+
+// Auto-sync when window regains focus (e.g. after login dialog closes)
+window.addEventListener('focus', function() {
+    CheckSupabaseSession();
+    SendSimpleCommand("get_login_info");
+});
+
+window.addEventListener('storage', function(e) {
+    if (e.key === 'make3d_session') {
+        CheckSupabaseSession();
+    }
+});
+
+// Periodic check: if still showing Guest User, poll C++ and localStorage
+setInterval(function() {
+    if ($('#LoginBlock').is(':visible')) {
+        CheckSupabaseSession();
+        SendSimpleCommand("get_login_info");
+    }
+}, 2500);

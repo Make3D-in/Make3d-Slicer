@@ -1,0 +1,41 @@
+{
+    "type": "process",
+    "setting_id": "M3DSTD123003",
+    "inherits": "fdm_process_common",
+    "name": "0.12mm Standard @Regular 0.3",
+    "from": "system",
+    "instantiation": "true",
+    "compatible_printers": [
+        "Pratham Mini Nozzle 0.3",
+        "Pratham Desktop Nozzle 0.3"
+    ],
+    
+    "initial_layer_print_height": "0.15",
+    "layer_height": "0.12",
+    "bottom_shell_layers": "8",
+    "top_shell_layers": "8",
+
+    "line_width": "0.33",
+    "inner_wall_line_width": "0.33",
+    "outer_wall_line_width": "0.33",
+    "top_surface_line_width": "0.33",
+    "sparse_infill_line_width": "0.33",
+    "initial_layer_line_width": "0.38",
+    "internal_solid_infill_line_width": "0.33",
+    "support_line_width": "0.3",
+
+    "sparse_infill_density": "20%",
+    "sparse_infill_pattern": "grid",
+    
+    "support_top_z_distance": "0.1",
+    "support_bottom_z_distance": "0.2",
+
+    "max_travel_detour_distance": "150",
+
+    "wall_loops": "3",
+
+    "outer_wall_speed": "45",
+    "inner_wall_speed": "50",
+    "infill_speed": "60",
+    "initial_layer_speed": "30"
+}

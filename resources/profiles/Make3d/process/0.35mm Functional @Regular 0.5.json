@@ -1,0 +1,45 @@
+{
+    "type": "process",
+    "setting_id": "M3DFNC353005",
+    "inherits": "fdm_process_common",
+    "name": "0.35mm Functional @Regular 0.5",
+    "from": "system",
+    "instantiation": "true",
+    "compatible_printers": [
+        "Pratham 3.0 Nozzle 0.5",
+        "Pratham 5.0 Nozzle 0.5",
+        "Pratham 6.0 Nozzle 0.5",
+        "Pratham X Nozzle 0.5",
+        "Pratham XL Nozzle 0.5"
+    ],
+    
+    "initial_layer_print_height": "0.25",
+    "layer_height": "0.35",
+    "bottom_shell_layers": "4",
+    "top_shell_layers": "4",
+
+    "line_width": "0.525",
+    "initial_layer_line_width": "0.625",
+    "outer_wall_line_width": "0.525",
+    "inner_wall_line_width": "0.56",
+    "top_surface_line_width": "0.525",
+    "sparse_infill_line_width": "0.54",
+    "internal_solid_infill_line_width": "0.54",
+    "support_line_width": "0.5",
+
+    "sparse_infill_density": "15%",
+    "sparse_infill_pattern": "adaptivecubic",
+    
+    "support_top_z_distance": "0.33",
+    "support_bottom_z_distance": "0.35",
+
+    "max_travel_detour_distance": "100",
+
+    "wall_loops": "2",
+
+    "outer_wall_speed": "45",
+    "inner_wall_speed": "50",
+    "infill_speed": "55",
+    "initial_layer_speed": "35",
+    "support_speed": "50"
+}

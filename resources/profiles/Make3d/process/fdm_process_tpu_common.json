@@ -1,0 +1,29 @@
+{
+    "type": "process",
+    "name": "fdm_process_tpu_common",
+    "inherits": "fdm_process_common",
+    "from": "system",
+    "instantiation": "false",
+
+    "wall_generator": "classic",
+
+    "bridge_flow": "1.2",
+    "internal_bridge_flow": "1.2",
+    
+    "initial_layer_speed": "30",
+    "initial_layer_infill_speed": "35",
+
+    "outer_wall_speed": "35",
+    "inner_wall_speed": "35",
+    "sparse_infill_speed": "35",
+    "internal_solid_infill_speed": "35",
+    "top_surface_speed": "35",
+    "gap_infill_speed": "35",
+    "support_speed": "35",
+    "support_interface_speed": "35",
+
+    "travel_speed": "80",
+
+    "raft_first_layer_expansion": "8",
+    "support_object_first_layer_gap": "0.2"
+}

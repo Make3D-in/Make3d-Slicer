@@ -1,0 +1,22 @@
+{
+    "type": "machine",
+    "setting_id": "M3DREGP6004",
+    "name": "Pratham 6.0 Nozzle 0.4",
+    "from": "system",
+    "inherits": "fdm_pratham_regular_common",
+    "default_print_profile": "0.20mm Standard @Regular 0.4",
+    "printer_model": "Pratham 6.0",
+    "printer_variant": "0.4",
+    "instantiation": "true",
+    "printable_area": [
+		"0x0",
+		"600x0",
+		"600x600",
+		"0x600"
+	],
+    "printable_height": "600",
+    
+    "nozzle_diameter":["0.4"],
+    "min_layer_height": "0.08",
+    "max_layer_height": "0.32"
+}

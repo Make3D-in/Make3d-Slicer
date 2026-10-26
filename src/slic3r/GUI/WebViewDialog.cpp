@@ -14,6 +14,8 @@
 #include <wx/toolbar.h>
 #include <wx/textdlg.h>
 #include <wx/url.h>
+#include <wx/filesys.h>
+#include <wx/filename.h>
 
 #include <slic3r/GUI/Widgets/WebView.hpp>
 
@@ -36,10 +38,11 @@ namespace GUI {
 WebViewPanel::WebViewPanel(wxWindow *parent)
         : wxPanel(parent, wxID_ANY, wxDefaultPosition, wxDefaultSize)
  {
-    wxString url = wxString::Format("file://%s/web/homepage/index.html", from_u8(resources_dir()));
+    wxFileName fn(from_u8(resources_dir()) + "/web/homepage/index.html");
+    wxString url = wxFileSystem::FileNameToURL(fn);
     wxString strlang = wxGetApp().current_language_code_safe();
     if (strlang != "")
-        url = wxString::Format("file://%s/web/homepage/index.html?lang=%s", from_u8(resources_dir()), strlang);
+        url += wxString::Format("?lang=%s", strlang);
 
     wxBoxSizer* topsizer = new wxBoxSizer(wxVERTICAL);
     
@@ -645,6 +648,20 @@ void WebViewPanel::OnDocumentLoaded(wxWebViewEvent& evt)
     }
     UpdateState();
     SendCloudProvidersInfo();
+
+    // Make3D Fix: Push login state to homepage after page loads.
+    // Ensures sidebar updates on installed (non-portable) systems where
+    // localStorage may be empty. CallAfter defers until JS is fully ready.
+    wxGetApp().CallAfter([] {
+        Slic3r::GUI::wxGetApp().get_login_info(ORCA_CLOUD_PROVIDER);
+    });
+
+    // Also start the login refresh timer if not already running
+    if (m_LoginUpdateTimer == nullptr) {
+        BOOST_LOG_TRIVIAL(info) << __FUNCTION__ << " Create Login Timer on page load";
+        m_LoginUpdateTimer = new wxTimer(this, LOGIN_INFO_UPDATE_TIMER_ID);
+        m_LoginUpdateTimer->Start(3000);
+    }
 }
 
 void WebViewPanel::OnTitleChanged(wxWebViewEvent &evt)

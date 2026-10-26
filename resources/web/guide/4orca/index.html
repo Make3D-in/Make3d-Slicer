@@ -3,39 +3,82 @@
 <head>
 <meta charset="utf-8">
 <meta http-equiv="Cache-Control" content="max-age=7200" />
-<title>引导_P1</title>
-<link rel="stylesheet" type="text/css" href="../../include/global.css" />	<!-- ORCA One for all-->
-<link rel="stylesheet" type="text/css" href="../css/common.css" />	
-<link rel="stylesheet" type="text/css" href="../css/dark.css" />		
+<title>Choose your workflow</title>
+<link rel="stylesheet" type="text/css" href="../../include/global.css" />
+<link rel="stylesheet" type="text/css" href="../css/common.css" />
+<link rel="stylesheet" type="text/css" href="../css/dark.css" />
 <link rel="stylesheet" type="text/css" href="4orca.css" />
 <script type="text/javascript" src="../js/jquery-2.1.1.min.js"></script>
-<script type="text/javascript" src="../js/json2.js"></script>	
-<script type="text/javascript" src="../../data/text.js"></script>	
-<script type="text/javascript" src="../js/globalapi.js"></script>	
+<script type="text/javascript" src="../js/json2.js"></script>
+<script type="text/javascript" src="../../data/text.js"></script>
+<script type="text/javascript" src="../js/globalapi.js"></script>
 <script type="text/javascript" src="../js/common.js"></script>
-<script type="text/javascript" src="4orca.js"></script>	
+<script type="text/javascript" src="4orca.js"></script>
 </head>
 <body onLoad="OnInit()">
 <div id="Title">
-	<div class="trans" tid="orca3">Stealth Mode</div>
+	<div class="wf-main-title">Choose your workflow</div>
 </div>
-<div id="Content">
+<div id="Content" class="ZScrol">
+    <div class="workflow-cards-container">
+        <!-- Card 1: Online -->
+        <div id="CardOnline" class="workflow-card selected" onclick="SelectWorkflow('online')">
+            <div class="card-header-row">
+                <div class="card-icon cloud-icon">
+                    <svg width="30" height="22" viewBox="0 0 30 22" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M8.5 20H23C26.3137 20 29 17.3137 29 14C29 10.9419 26.7081 8.41908 23.7317 8.04616C23.0188 3.51866 19.1121 0 14.5 0C9.69741 0 5.76214 3.82029 5.51351 8.58385C2.42777 9.17646 0 11.8795 0 15.1429C0 18.9298 3.07016 22 6.85714 22H8.5V20Z" fill="#3B82F6"/>
+                    </svg>
+                </div>
+                <div class="card-check-badge">
+                    <svg class="check-svg" width="14" height="11" viewBox="0 0 14 11" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M1 5.5L4.8 9.5L13 1.5" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </div>
+            </div>
+            <div class="card-title">Online (Most convenient)</div>
+            <div class="card-subtitle">The full-featured standard. Cloud-ready with remote printer control & cloud synchronization.</div>
+            <ul class="card-features">
+                <li><span class="dot dot-blue"></span> Make3D Cloud profile syncing</li>
+                <li><span class="dot dot-blue"></span> Remote printer control & monitoring</li>
+                <li><span class="dot dot-blue"></span> Automatic cloud presets backup</li>
+            </ul>
+        </div>
 
-    <div id="FeatureText">
-		<div><a tid="orca4" class="trans TextS1">This disables all cloud features, including Orca Cloud profile syncing. Users who prefer to work entirely offline can enable this option.</a></div>
-			<br/>
-			<div><a tid="orca12" class="trans TextS2">Note: When Stealth Mode is enabled, your user profiles will not be backed up to Orca Cloud.</a></div>
+        <!-- Card 2: Offline -->
+        <div id="CardOffline" class="workflow-card unselected" onclick="SelectWorkflow('offline')">
+            <div class="card-header-row">
+                <div class="card-icon lock-icon">
+                    <svg width="24" height="26" viewBox="0 0 24 26" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <rect x="1.5" y="9.5" width="21" height="15" rx="3.5" stroke="#94A3B8" stroke-width="2.2"/>
+                        <path d="M5.5 9.5V6.5C5.5 2.91015 8.41015 0 12 0C15.5899 0 18.5 2.91015 18.5 6.5V9.5" stroke="#94A3B8" stroke-width="2.2"/>
+                        <circle cx="12" cy="17" r="2" fill="#94A3B8"/>
+                    </svg>
+                </div>
+                <div class="card-check-badge">
+                    <svg class="check-svg" width="14" height="11" viewBox="0 0 14 11" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M1 5.5L4.8 9.5L13 1.5" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </div>
+            </div>
+            <div class="card-title">Offline (Privacy focused)</div>
+            <div class="card-subtitle">Privacy-first workflow. Complete manual control over all data, network and updates.</div>
+            <ul class="card-features">
+                <li><span class="dot dot-orange"></span> 100% Offline (No cloud features)</li>
+                <li><span class="dot dot-orange"></span> Profiles stored locally only</li>
+                <li><span class="dot dot-green"></span> Local Network printing enabled</li>
+            </ul>
+        </div>
     </div>
-	
-	
-	<!-- ORCA use label tag to allow checkbox to toggle when user clicked to text -->
-	<label id="CheckArea"><input id="StealthMode" onClick="SendStealthModeCheck()" type="checkbox"><a tid="orca5" class="trans TextS1">Enable Stealth Mode.</a></label>
-	<div id="RestartText" tid="t70" class="trans" ></div>
-	
+
+    
+
+    <div class="workflow-footer-note">
+        Need more granular control? You can adjust the options individually anytime in Preferences &gt; Network.
+    </div>
 </div>
 <div id="AcceptArea">
-	<div class="ButtonStyleRegular ButtonTypeChoice trans" tid="t8" id="PreBtn"  onclick="window.history.back()">Back</div>
-	<div class="ButtonStyleConfirm ButtonTypeChoice trans" tid="t9" id="GotoNetPluginBtn"  onclick="GotoNetPluginPage()">Next</div>	
+	<div class="ButtonStyleRegular ButtonTypeChoice trans" tid="t8" id="PreBtn" onclick="window.history.back()">Back</div>
+	<div class="ButtonStyleConfirm ButtonTypeChoice trans" tid="t25" id="FinishBtn" onclick="FinishGuideWithStealth()">Finish</div>	
 </div>	
 </body>
 </html>

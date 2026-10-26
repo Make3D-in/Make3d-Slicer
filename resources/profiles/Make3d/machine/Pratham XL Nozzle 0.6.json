@@ -1,0 +1,48 @@
+{
+    "type": "machine",
+    "setting_id": "M3DREGPXL06",
+    "name": "Pratham XL Nozzle 0.6",
+    "from": "system",
+    "inherits": "fdm_pratham_regular_common",
+    "default_print_profile": "0.30mm Standard @Regular 0.6",
+    "printer_model": "Pratham XL",
+    "printer_variant": "0.6",
+    "instantiation": "true",
+    "printable_area": [
+		"0x0",
+		"1000x0",
+		"1000x1000",
+		"0x1000"
+	],
+    "printable_height": "1000",
+    
+    "nozzle_diameter":["0.6"],
+    "min_layer_height": "0.12",
+    "max_layer_height": "0.48",
+
+    "retraction_length": ["3"],
+    "retract_restart_extra": ["0"],
+    "retraction_speed": ["40"],
+    "deretraction_speed": ["40"],
+    "retraction_minimum_travel": ["10"],
+
+    "machine_max_speed_x": ["50"],
+    "machine_max_speed_y": ["50"],
+    "machine_max_speed_z": ["5"],
+    "machine_max_speed_e": ["50"],
+
+
+    "machine_max_acceleration_x": ["700"],
+    "machine_max_acceleration_y": ["700"],
+    "machine_max_acceleration_z": ["50"],
+    "machine_max_acceleration_e": ["1000"],
+    "machine_max_acceleration_extruding": ["1000"],
+    "machine_max_acceleration_retracting": ["1000"],
+    
+
+
+    "machine_max_jerk_x": ["7"],
+    "machine_max_jerk_y": ["7"],
+    "machine_max_jerk_z": ["0.15"],
+    "machine_max_jerk_e": ["5"]
+}

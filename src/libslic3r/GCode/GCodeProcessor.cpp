@@ -1148,16 +1148,22 @@ void GCodeProcessor::run_post_process()
                     PrintEstimatedStatistics::ETimeMode mode    = static_cast<PrintEstimatedStatistics::ETimeMode>(i);
                     if (mode == PrintEstimatedStatistics::ETimeMode::Normal || machine.enabled) {
                         char buf[128];
-                        if (!s_IsBBLPrinter)
+                        if (!s_IsBBLPrinter) {
                             // Orca: compatibility with klipper_estimator
                             sprintf(buf, "; estimated printing time (%s mode) = %s\n",
                                     (mode == PrintEstimatedStatistics::ETimeMode::Normal) ? "normal" : "silent",
                                     get_time_dhms(machine.time).c_str());
-                        else {
+                            export_line.append_line(buf);
+                        } else {
                             sprintf(buf, "; model printing time: %s; total estimated time: %s\n",
                                     get_time_dhms(machine.time - machine.prepare_time).c_str(), get_time_dhms(machine.time).c_str());
+                            export_line.append_line(buf);
+                            // Also append standard estimated printing time comment for Moonraker/Mainsail/Fluidd compatibility
+                            sprintf(buf, "; estimated printing time (%s mode) = %s\n",
+                                    (mode == PrintEstimatedStatistics::ETimeMode::Normal) ? "normal" : "silent",
+                                    get_time_dhms(machine.time).c_str());
+                            export_line.append_line(buf);
                         }
-                        export_line.append_line(buf);
                     }
                 }
                 for (size_t i = 0; i < static_cast<size_t>(PrintEstimatedStatistics::ETimeMode::Count); ++i) {

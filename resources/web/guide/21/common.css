@@ -1,7 +1,9 @@
 #Content {
-	overflow-y:auto;
-	padding: 0 10px 0 20px; /* ORCA Specify & Reduce horizontal paddings to fit 4 items per row */
-	height: 100%;
+	overflow-y: auto;
+	padding: 0 15px 15px 20px;
+	flex: 1 1 auto;
+	height: calc(100% - 130px);
+	box-sizing: border-box;
 }
 
 /* VENDOR BLOCK */
@@ -439,3 +441,156 @@ img.ModelThumbnail {
 	display: flex;
 	justify-content:flex-end;
 }
+
+
+/* CUSTOM MAKE3D ENHANCEMENTS FOR PRINTER SELECTION */
+.PrinterBlock {
+	display: flex;
+	align-items: center;
+	text-align: center;
+	flex-direction: column;
+	gap: 8px;
+	padding: 12px 10px;
+	background-color: var(--bg-color-secondary);
+	position: relative;
+	border: 2px solid transparent !important;
+	border-radius: 8px !important;
+	cursor: pointer;
+	transition: all 0.15s ease-in-out;
+}
+
+.PrinterBlock:hover {
+	background-color: var(--focus-bg-item);
+	border-color: var(--main-color) !important;
+}
+
+.PrinterBlock:has(.ModelCheckBoxSelected),
+.PrinterBlock.Selected {
+	border-color: #007acc !important;
+	background-color: #e8f4fc !important;
+	box-shadow: 0 0 0 1px #007acc;
+}
+
+.ModelCheckBox {
+	position: absolute !important;
+	top: 8px !important;
+	left: 8px !important;
+	width: 22px !important;
+	height: 22px !important;
+	border-radius: 4px !important;
+	border: 2px solid #aaa !important;
+	background: #ffffff !important;
+	display: flex !important;
+	align-items: center !important;
+	justify-content: center !important;
+	box-shadow: 0 1px 3px rgba(0,0,0,0.15);
+	transition: all 0.15s ease-in-out;
+}
+
+.ModelCheckBox.ModelCheckBoxSelected {
+	background: #007acc !important;
+	border-color: #007acc !important;
+}
+
+.ModelCheckBox.ModelCheckBoxSelected::after {
+	content: "✔";
+	color: #ffffff;
+	font-size: 14px;
+	font-weight: 900;
+	line-height: 1;
+}
+
+#AcceptArea {
+	height: 60px !important;
+	min-height: 60px !important;
+	max-height: 60px !important;
+	padding: 0 20px !important;
+	display: flex !important;
+	justify-content: flex-end !important;
+	align-items: center !important;
+	gap: 15px !important;
+	background: var(--bg-color);
+	border-top: 1px solid var(--border-color);
+	box-sizing: border-box;
+}
+
+.ButtonStyleConfirm,
+.ButtonStyleRegular {
+	display: inline-flex !important;
+	align-items: center !important;
+	justify-content: center !important;
+	padding: 6px 24px !important;
+	height: 34px !important;
+	min-width: 90px !important;
+	font-size: 14px !important;
+	font-weight: 600 !important;
+	border-radius: 5px !important;
+	cursor: pointer !important;
+	text-decoration: none !important;
+	box-sizing: border-box !important;
+	user-select: none !important;
+}
+
+.ButtonStyleConfirm {
+	background-color: #007acc !important;
+	color: #ffffff !important;
+}
+.ButtonStyleConfirm:hover {
+	background-color: #0066b3 !important;
+}
+
+.ButtonStyleRegular {
+	background-color: #e4e4e4 !important;
+	color: #222222 !important;
+}
+.ButtonStyleRegular:hover {
+	background-color: #d6d6d6 !important;
+}
+
+
+/* ULTRA-CRISP MODERN CHECKBOX STYLING */
+input[type="checkbox"] {
+	-webkit-appearance: none !important;
+	appearance: none !important;
+	width: 16px !important;
+	height: 16px !important;
+	min-width: 16px !important;
+	min-height: 16px !important;
+	border: 1.5px solid #a6a6a6 !important;
+	border-radius: 3px !important;
+	background-color: #ffffff !important;
+	cursor: pointer !important;
+	display: inline-flex !important;
+	align-items: center !important;
+	justify-content: center !important;
+	vertical-align: middle !important;
+	margin: 0 6px 0 0 !important;
+	padding: 0 !important;
+	outline: none !important;
+	box-sizing: border-box !important;
+	transition: all 0.15s ease-in-out !important;
+}
+
+input[type="checkbox"]:hover {
+	border-color: #007acc !important;
+}
+
+input[type="checkbox"]:checked {
+	background-color: #007acc !important;
+	border-color: #007acc !important;
+	background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="white"><path d="M13.485 3.515a1 1 0 0 1 0 1.414l-7.071 7.071a1 1 0 0 1-1.414 0L2.172 9.172a1 1 0 1 1 1.414-1.414L5.7 9.879l6.371-6.364a1 1 0 0 1 1.414 0z"/></svg>') !important;
+	background-repeat: no-repeat !important;
+	background-position: center !important;
+	background-size: 11px 11px !important;
+}
+
+input[type="checkbox"]:indeterminate {
+	background-color: #007acc !important;
+	border-color: #007acc !important;
+	background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="white"><rect x="3" y="6.5" width="10" height="3" rx="1.5"/></svg>') !important;
+	background-repeat: no-repeat !important;
+	background-position: center !important;
+	background-size: 10px 10px !important;
+}
+
+.search, .SidebarBtn, .LayoutSelector { display: none !important; }

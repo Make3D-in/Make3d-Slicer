@@ -1,0 +1,13 @@
+{
+    "type": "filament",
+    "name": "Make3d PLA-CF",
+    "inherits": "Make3d PLA+ Rapid",
+    "from": "system",
+    "filament_id": "M3DPLACF",
+    "setting_id": "PLACF",
+    "instantiation": "true",
+    "filament_type": ["PLA-CF"],
+    "filament_vendor": ["Make3d"],
+
+    "filament_max_volumetric_speed": ["12"]
+}

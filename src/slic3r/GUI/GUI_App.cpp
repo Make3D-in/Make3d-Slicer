@@ -329,7 +329,7 @@ public:
         m_bg_color = StateColor::darkModeColorFor(wxColour("#FFFFFF"));
         m_fg_color = StateColor::darkModeColorFor(wxColour("#6B6A6A"));
         m_progress_bg_color = StateColor::darkModeColorFor(wxColour("#DFDFDF"));
-        m_progress_fg_color = StateColor::darkModeColorFor(wxColour("#009688"));
+        m_progress_fg_color = StateColor::darkModeColorFor(wxColour("#007acc"));
         m_progress_h = FromDIP(6);
         bool dark_mode = m_fg_color != wxColour("#6B6A6A");
         wxSize sz  = m_window->GetClientSize();
@@ -994,32 +994,7 @@ void GUI_App::post_init()
         });
     }
 
-    // Orca: notify users upgrading from a pre-2.4.0 version that profile syncing
-    // moved from Bambu Cloud to Orca Cloud.
-    if (is_editor() && m_last_config_version && m_last_config_version->valid()
-        && *m_last_config_version < Semver(2, 4, 0)) {
-        CallAfter([] {
-            const wxString wiki_url = "https://www.orcaslicer.com/wiki/user_profiles/user_profiles.html#profiles-missing-after-updating-from-bambu-cloud";
-            MessageDialog dlg(nullptr,
-                _L("Since version 2.4.0, OrcaSlicer syncs user profiles through Orca Cloud instead of Bambu Cloud.\n\n"
-                   "To migrate your existing profiles, log in to Orca Cloud and they will be transferred automatically. "
-                   "To learn more about how OrcaSlicer stores and syncs your profiles, or to migrate your presets manually, check out our wiki.\n\n"
-                   "If you did not use Bambu Cloud to sync profiles, this change does not affect you and you can safely ignore this message."),
-                _L("Profile syncing change"),
-                wxOK,
-                "",
-                _L("Learn more"),
-                [wiki_url](const wxString &) { wxLaunchDefaultBrowser(wiki_url); });
-            // Hack: the "Learn more" link renders the message in a wxHtmlWindow whose
-            // height is underestimated for multi-paragraph text, leaving a scrollbar.
-            // The html sits in a proportion-1 sizer chain, so grow the dialog (never
-            // shrink it below its content width) to give the text enough room.
-            const wxSize sz = dlg.GetSize();
-            dlg.SetSize(std::max(sz.x, dlg.FromDIP(280)), std::max(sz.y, dlg.FromDIP(200)));
-            dlg.CenterOnParent();
-            dlg.ShowModal();
-        });
-    }
+    // Profile syncing migration popup disabled for Make3D Slicer
 
     if(!m_networking_need_update && m_agent) {
         m_agent->set_on_ssdp_msg_fn(
@@ -2839,6 +2814,17 @@ bool GUI_App::on_init_inner()
 {
     wxLog::SetActiveTarget(new wxBoostLog());
 
+#if defined(_WIN32) && wxUSE_WEBVIEW_EDGE
+    // Force WebView2 to store all browser data in LocalAppData so it works in C:\Program Files
+    wxString webviewDataDir = wxStandardPaths::Get().GetUserLocalDataDir();
+    wxFileName wvDir(webviewDataDir, "");
+    wvDir.AppendDir("webview2");
+    if (!wvDir.DirExists()) {
+        wvDir.Mkdir(wxS_DIR_DEFAULT, wxPATH_MKDIR_FULL);
+    }
+    wxSetEnv("WEBVIEW2_USER_DATA_FOLDER", wvDir.GetFullPath());
+#endif
+
 #ifdef __APPLE__
     // Override wxWidgets' kAEGetURL handler so orcaslicer:// deep links keep
     // working after the wxWidgets 3.3.2 upgrade on macOS (#13119).
@@ -3293,8 +3279,16 @@ bool GUI_App::on_init_inner()
             }
         }
     } else {
-        enable_user_preset_folder(false);
-        plugin_mgr.set_cloud_user("");
+        // Make3D Slicer: preserve active user preset folder across app restarts if user has not logged out
+        std::string active_preset_folder = app_config->get("preset_folder");
+        if (active_preset_folder.empty() || active_preset_folder == DEFAULT_USER_FOLDER_NAME) {
+            enable_user_preset_folder(false);
+            plugin_mgr.set_cloud_user("");
+        } else {
+            BOOST_LOG_TRIVIAL(info) << "[Make3D Startup] Preserving logged-in user preset folder: " << active_preset_folder;
+            preset_bundle->update_user_presets_directory(active_preset_folder);
+            plugin_mgr.set_cloud_user(active_preset_folder);
+        }
     }
 
     // BBS if load user preset failed
@@ -4040,9 +4034,9 @@ bool GUI_App::dark_mode()
     // wxWidgets 3.3's MSWEnableDarkMode(DarkMode_Auto) and can return true
     // even though the user asked for light mode.
     const auto &val = wxGetApp().app_config->get("dark_color_mode");
-    if (val == "1") return true;
     if (val == "0") return false;
-    return check_dark_mode();
+    if (val == "1") return true;
+    return true; // Make3D Slicer: default to Dark Mode
 #endif
 #else
     //BBS disable DarkUI mode
@@ -4185,7 +4179,7 @@ void GUI_App::UpdateDarkUI(wxWindow* window, bool highlited/* = false*/, bool ju
         auto orig_col = window->GetBackgroundColour();
         auto bg_col = StateColor::darkModeColorFor(orig_col);
         // there are cases where the background color of an item is bright, specifically:
-        // * the background color of a button: #009688  -- 73
+        // * the background color of a button: #007acc  -- 73
         if (bg_col != orig_col) {
             window->SetBackgroundColour(bg_col);
         }
@@ -4845,23 +4839,91 @@ void GUI_App::request_login(bool show_user_info, const std::string& provider/* =
 
     if (show_user_info) {
         CallAfter([this, provider] {
-            get_login_info(provider);
+            CallAfter([this, provider] {
+                get_login_info(provider);
+            });
         });
     }
 }
 
 void GUI_App::get_login_info(const std::string& provider/* = ORCA_CLOUD_PROVIDER*/)
 {
+    // Make3D Cloud: if user is logged in, sync session to homepage and report active login
+    bool make3d_logged = false;
+    if (app_config) {
+        std::string flag = app_config->get("make3d_logged_in");
+        if (flag == "true" || flag == "1" || (!app_config->get("make3d_access_token").empty() && !app_config->get("make3d_user_id").empty())) {
+            make3d_logged = true;
+        }
+    }
+    if (make3d_logged) {
+        std::string uname = app_config->get("make3d_user_name");
+        std::string uemail = app_config->get("make3d_user_email");
+        std::string uid = app_config->get("make3d_user_id");
+        std::string token = app_config->get("make3d_access_token");
+        std::string refresh = app_config->get("make3d_refresh_token");
+        std::string session_raw = app_config->get("make3d_session_raw");
+
+        if (uname.empty() && !uemail.empty()) {
+            auto at_pos = uemail.find('@');
+            uname = (at_pos != std::string::npos) ? uemail.substr(0, at_pos) : uemail;
+        }
+        if (uname.empty()) uname = "Make3D User";
+
+        if (session_raw.empty()) {
+            nlohmann::json s;
+            s["access_token"] = token;
+            s["refresh_token"] = refresh;
+            s["user"]["id"] = uid;
+            s["user"]["email"] = uemail;
+            session_raw = s.dump();
+        }
+
+        nlohmann::json login_resp;
+        login_resp["command"]     = "get_login_info";
+        login_resp["is_login"]    = true;
+        login_resp["login"]       = true;
+        login_resp["name"]        = uname;
+        login_resp["nickname"]    = uname;
+        login_resp["user_name"]   = uname;
+        login_resp["email"]       = uemail;
+        login_resp["user_id"]     = uid;
+        login_resp["avatar"]      = "";
+        login_resp["session_raw"] = session_raw;
+
+        std::string resp_str = login_resp.dump();
+        wxString strJS = wxString::FromUTF8("window.postMessage(" + resp_str + ");");
+        if (mainframe && mainframe->m_webview) {
+            if (!session_raw.empty()) {
+                wxString jsStore = wxString::Format(
+                    "try{localStorage.setItem('make3d_session', %s);sessionStorage.setItem('make3d_session', %s);}catch(e){}",
+                    nlohmann::json(session_raw).dump(),
+                    nlohmann::json(session_raw).dump()
+                );
+                mainframe->m_webview->RunScript(jsStore);
+            }
+            mainframe->m_webview->RunScript(strJS);
+            nlohmann::json uname_j = uname;
+            wxString directCall = wxString::FromUTF8(
+                "if(typeof SetLoginInfo==='function'){SetLoginInfo('', " + uname_j.dump() + ");}"
+            );
+            mainframe->m_webview->RunScript(directCall);
+            mainframe->m_webview->SetLoginPanelVisibility(true);
+        }
+        return;
+    }
     if (m_agent) {
         if (m_agent->is_user_login(provider)) {
             std::string login_cmd = m_agent->build_login_cmd(provider);
             wxString strJS = wxString::Format("window.postMessage(%s)", from_u8(login_cmd));
             GUI::wxGetApp().run_script(strJS);
         } else {
-            m_agent->user_logout(false, provider);
-            std::string logout_cmd = m_agent->build_logout_cmd(provider);
-            wxString    strJS      = wxString::Format("window.postMessage(%s)", from_u8(logout_cmd));
-            GUI::wxGetApp().run_script(strJS);
+            if (!make3d_logged) {
+                m_agent->user_logout(false, provider);
+                std::string logout_cmd = m_agent->build_logout_cmd(provider);
+                wxString    strJS      = wxString::Format("window.postMessage(%s)", from_u8(logout_cmd));
+                GUI::wxGetApp().run_script(strJS);
+            }
         }
         mainframe->m_webview->SetLoginPanelVisibility(true);
     }
@@ -4973,6 +5035,26 @@ int GUI_App::request_user_unbind(std::string dev_id, const std::string& provider
 std::string GUI_App::handle_web_request(std::string cmd)
 {
     try {
+        cmd.erase(0, cmd.find_first_not_of(" \t\r\n"));
+        cmd.erase(cmd.find_last_not_of(" \t\r\n") + 1);
+        try {
+            auto j_tmp = nlohmann::json::parse(cmd);
+            while (j_tmp.is_string()) {
+                try { j_tmp = nlohmann::json::parse(j_tmp.get<std::string>()); } catch (...) { break; }
+            }
+            if (j_tmp.is_object() && j_tmp.contains("raw")) {
+                if (j_tmp["raw"].is_string()) {
+                    try { j_tmp = nlohmann::json::parse(j_tmp["raw"].get<std::string>()); } catch (...) {}
+                } else if (j_tmp["raw"].is_object()) {
+                    j_tmp = j_tmp["raw"];
+                }
+            }
+            if (j_tmp.is_object()) {
+                cmd = j_tmp.dump();
+            }
+        } catch (...) {}
+        BOOST_LOG_TRIVIAL(info) << "handle_web_request received command: " << cmd;
+
         //BBS use nlohmann json format
         std::stringstream ss(cmd), oss;
         pt::ptree root, response;
@@ -5052,9 +5134,41 @@ std::string GUI_App::handle_web_request(std::string cmd)
                     this->request_login(true);
                 });
             }
-            else if (command_str.compare("homepage_logout") == 0) {
+            else if (command_str.compare("user_login") == 0) {
+                BOOST_LOG_TRIVIAL(info) << "[Make3D Auth] handle_web_request received user_login from webview";
+                this->handle_script_message(cmd);
+            }
+            else if (command_str.compare("homepage_logout") == 0 || command_str.compare("user_logout") == 0) {
                 CallAfter([this] {
                     BOOST_LOG_TRIVIAL(info) << "logout: homepage_logout";
+                    if (app_config) {
+                        app_config->set("make3d_logged_in", "false");
+                        app_config->set("make3d_user_id", "");
+                        app_config->set("make3d_user_name", "");
+                        app_config->set("make3d_user_email", "");
+                        app_config->set("make3d_access_token", "");
+                        app_config->set("make3d_refresh_token", "");
+                        app_config->set("make3d_session_raw", "");
+                        app_config->set("preset_folder", "");
+                        app_config->save();
+                    }
+                    if (mainframe && mainframe->m_webview) {
+                        mainframe->m_webview->RunScript(
+                            "try{localStorage.removeItem('make3d_session');sessionStorage.removeItem('make3d_session');}catch(e){}"
+                            "if(typeof SetUserOffline==='function'){SetUserOffline();}"
+                        );
+                    }
+                    // Isolate & wipe user presets on logout: switch back to default
+                    if (preset_bundle) {
+                        preset_bundle->remove_users_preset(*app_config);
+                    }
+                    if (preset_bundle) {
+                        preset_bundle->update_user_presets_directory(DEFAULT_USER_FOLDER_NAME);
+                        preset_bundle->load_user_presets(DEFAULT_USER_FOLDER_NAME, ForwardCompatibilitySubstitutionRule::Enable);
+                    }
+                    if (mainframe) {
+                        mainframe->update_side_preset_ui();
+                    }
                     request_user_logout();
                 });
             }
@@ -5073,8 +5187,8 @@ std::string GUI_App::handle_web_request(std::string cmd)
                     request_user_logout(BBL_CLOUD_PROVIDER);
                 });
             }
-            else if (command_str.compare("homepage_orca_login_or_register") == 0) {
-                CallAfter([this] { request_login(true, ORCA_CLOUD_PROVIDER); });
+            else if (command_str.compare("homepage_login_or_register") == 0 || command_str.compare("homepage_orca_login_or_register") == 0) {
+                CallAfter([this] { request_login(true); });
             }
             else if (command_str.compare("homepage_orca_logout") == 0) {
                 CallAfter([this] {
@@ -5086,10 +5200,159 @@ std::string GUI_App::handle_web_request(std::string cmd)
                 CallAfter([this] { open_mall_page_dialog(); });
             }
             else if (command_str.compare("homepage_newproject") == 0) {
-                this->request_open_project("<new>");
+                CallAfter([this] { this->request_open_project("<new>"); });
             }
             else if (command_str.compare("homepage_openproject") == 0) {
-                this->request_open_project({});
+                CallAfter([this] { this->request_open_project({}); });
+            }
+            else if (command_str.compare("homepage_check_user") == 0) {
+                try {
+                    auto j = nlohmann::json::parse(cmd);
+                    std::string user_id;
+                    if (j.contains("user_id")) user_id = j["user_id"].get<std::string>();
+                    for (auto& c : user_id) {
+                        if (c == '/' || c == '\\' || c == ':' || c == '*' || c == '?' || c == '"' || c == '<' || c == '>' || c == '|' || c == '@' || c == '.')
+                            c = '_';
+                    }
+                    if (!user_id.empty()) {
+                        CallAfter([this, user_id] {
+                            if (app_config && app_config->get("preset_folder") != user_id) {
+                                BOOST_LOG_TRIVIAL(info) << "[Make3D AutoSync] homepage_check_user switching to active user: " << user_id;
+                                app_config->set("preset_folder", user_id);
+                                app_config->save();
+                                if (preset_bundle) {
+                                    preset_bundle->remove_users_preset(*app_config);
+                                    preset_bundle->update_user_presets_directory(user_id);
+                                    preset_bundle->load_user_presets(user_id, ForwardCompatibilitySubstitutionRule::Enable);
+                                }
+                                if (mainframe) mainframe->update_side_preset_ui();
+                            }
+                        });
+                    }
+                } catch (...) {}
+            }
+            else if (command_str.compare("import_cloud_presets") == 0) {
+                try {
+                    auto j = nlohmann::json::parse(cmd);
+                    if (j.contains("presets")) {
+                        nlohmann::json presets_to_import = j["presets"];
+                        std::string user_folder;
+                        if (j.contains("user_id")) user_folder = j["user_id"].get<std::string>();
+                        if (user_folder.empty() && app_config) {
+                            user_folder = app_config->get("preset_folder");
+                        }
+                        if (user_folder.empty()) user_folder = DEFAULT_USER_FOLDER_NAME;
+                        for (auto& c : user_folder) {
+                            if (c == '/' || c == '\\' || c == ':' || c == '*' || c == '?' || c == '"' || c == '<' || c == '>' || c == '|' || c == '@' || c == '.')
+                                c = '_';
+                        }
+
+                        CallAfter([this, presets_to_import, user_folder] {
+                            try {
+                                namespace fs = boost::filesystem;
+                                std::string data_dir_str = Slic3r::data_dir();
+                                fs::path presets_root = fs::path(data_dir_str) / "user" / user_folder;
+                                int imported = 0;
+
+                                for (const auto& entry : presets_to_import) {
+                                    if (!entry.contains("preset_type") || !entry.contains("preset_name") || !entry.contains("preset_data"))
+                                        continue;
+                                    std::string pt_name  = entry["preset_type"].get<std::string>();
+                                    std::string pt_fname = entry["preset_name"].get<std::string>();
+                                    nlohmann::json pt_data  = entry["preset_data"];
+                                    for (auto& c : pt_fname) {
+                                        if (c == '/' || c == '\\' || c == ':' || c == '*' || c == '?' || c == '"' || c == '<' || c == '>' || c == '|')
+                                            c = '_';
+                                    }
+                                    fs::path type_dir = presets_root / pt_name;
+                                    fs::create_directories(type_dir);
+                                    fs::path out_path = type_dir / (pt_fname + ".json");
+                                    std::ofstream ofs(out_path.string());
+                                    if (ofs.is_open()) {
+                                        ofs << pt_data.dump(2);
+                                        imported++;
+                                    }
+                                }
+
+                                if (app_config) {
+                                    app_config->set("preset_folder", user_folder);
+                                    app_config->save();
+                                }
+                                if (preset_bundle) {
+                                    preset_bundle->remove_users_preset(*app_config);
+                                    preset_bundle->update_user_presets_directory(user_folder);
+                                    preset_bundle->load_user_presets(user_folder, ForwardCompatibilitySubstitutionRule::Enable);
+                                }
+                                if (mainframe) mainframe->update_side_preset_ui();
+                                BOOST_LOG_TRIVIAL(info) << "[Make3D AutoSync] handle_web_request imported " << imported << " presets for user " << user_folder;
+                            } catch (std::exception& e) {
+                                BOOST_LOG_TRIVIAL(error) << "[Make3D AutoSync] handle_web_request import_cloud_presets failed: " << e.what();
+                            }
+                        });
+                    }
+                } catch (...) {}
+            }
+            else if (command_str.compare("get_user_presets_json") == 0) {
+                try {
+                    auto j = nlohmann::json::parse(cmd);
+                    std::string sequence_id;
+                    std::string user_folder;
+                    if (j.contains("sequence_id")) sequence_id = j["sequence_id"].get<std::string>();
+                    if (j.contains("user_id"))     user_folder = j["user_id"].get<std::string>();
+                    if (user_folder.empty() && app_config) {
+                        user_folder = app_config->get("preset_folder");
+                    }
+                    if (user_folder.empty()) user_folder = DEFAULT_USER_FOLDER_NAME;
+                    for (auto& c : user_folder) {
+                        if (c == '/' || c == '\\' || c == ':' || c == '*' || c == '?' || c == '"' || c == '<' || c == '>' || c == '|' || c == '@' || c == '.')
+                            c = '_';
+                    }
+
+                    CallAfter([this, sequence_id, user_folder] {
+                        try {
+                            namespace fs = boost::filesystem;
+                            std::string data_dir_str = Slic3r::data_dir();
+                            nlohmann::json presets_array = nlohmann::json::array();
+                            const std::vector<std::string> preset_types = {"process", "filament", "machine"};
+
+                            fs::path presets_root = fs::path(data_dir_str) / "user" / user_folder;
+                            if (fs::exists(presets_root)) {
+                                for (const auto& pt_name : preset_types) {
+                                    fs::path type_dir = presets_root / pt_name;
+                                    if (!fs::exists(type_dir)) continue;
+                                    for (fs::directory_iterator it(type_dir); it != fs::directory_iterator(); ++it) {
+                                        if (it->path().extension() != ".json") continue;
+                                        std::string stem_name = it->path().stem().string();
+                                        try {
+                                            std::ifstream ifs(it->path().string());
+                                            if (!ifs.is_open()) continue;
+                                            std::string content((std::istreambuf_iterator<char>(ifs)),
+                                                                 std::istreambuf_iterator<char>());
+                                            nlohmann::json preset_j = nlohmann::json::parse(content);
+                                            nlohmann::json entry;
+                                            entry["preset_type"] = pt_name;
+                                            entry["preset_name"] = stem_name;
+                                            entry["preset_data"] = preset_j;
+                                            presets_array.push_back(entry);
+                                        } catch (...) {}
+                                    }
+                                }
+                            }
+
+                            if (mainframe && mainframe->m_webview) {
+                                nlohmann::json resp;
+                                resp["command"]     = "presets_data";
+                                resp["sequence_id"] = sequence_id;
+                                resp["presets"]     = presets_array;
+                                wxString jsCall = wxString::Format("window.postMessage(%s)", wxString::FromUTF8(resp.dump()));
+                                mainframe->m_webview->RunScript(jsCall);
+                            }
+                            BOOST_LOG_TRIVIAL(info) << "[Make3D AutoSync] handle_web_request exported " << presets_array.size() << " presets for user " << user_folder;
+                        } catch (std::exception& e) {
+                            BOOST_LOG_TRIVIAL(error) << "[Make3D AutoSync] handle_web_request get_user_presets_json failed: " << e.what();
+                        }
+                    });
+                } catch (...) {}
             }
             else if (command_str.compare("get_recent_projects") == 0) {
                 if (mainframe) {
@@ -5145,6 +5408,18 @@ std::string GUI_App::handle_web_request(std::string cmd)
 
                         std::string FilePath = NowFile.make_preferred().string();
                         desktop_open_any_folder(FilePath);
+                    }
+                }
+            }
+            else if (command_str.compare("open_url_in_local_browser") == 0) {
+                if (root.get_child_optional("data") != boost::none) {
+                    pt::ptree data_node = root.get_child("data");
+                    boost::optional<std::string> url = data_node.get_optional<std::string>("url");
+                    if (url.has_value()) {
+                        std::string target_url = url.value();
+                        CallAfter([target_url] {
+                            wxLaunchDefaultBrowser(wxString::FromUTF8(target_url));
+                        });
                     }
                 }
             }
@@ -5238,13 +5513,282 @@ void GUI_App::handle_script_message(std::string msg, const std::string& provider
         json j = json::parse(msg);
         if (j.contains("command")) {
             wxString cmd = j["command"];
-            if (cmd == "user_login") {
+            if (cmd == "user_logout") {
+                CallAfter([this] {
+                    if (app_config) {
+                        app_config->set("make3d_logged_in", "false");
+                        app_config->set("make3d_user_id", "");
+                        app_config->set("make3d_user_name", "");
+                        app_config->set("make3d_user_email", "");
+                        app_config->set("make3d_access_token", "");
+                        app_config->set("make3d_refresh_token", "");
+                        app_config->set("make3d_session_raw", "");
+                        app_config->set("preset_folder", "");
+                        app_config->save();
+                    }
+                    if (mainframe && mainframe->m_webview) {
+                        mainframe->m_webview->RunScript(
+                            "try{localStorage.removeItem('make3d_session');sessionStorage.removeItem('make3d_session');}catch(e){}"
+                            "if(typeof SetUserOffline==='function'){SetUserOffline();}"
+                        );
+                    }
+                    // Isolate & wipe user presets on logout: switch back to default
+                    if (preset_bundle) {
+                        preset_bundle->remove_users_preset(*app_config);
+                    }
+                    if (preset_bundle) {
+                        preset_bundle->update_user_presets_directory(DEFAULT_USER_FOLDER_NAME);
+                        preset_bundle->load_user_presets(DEFAULT_USER_FOLDER_NAME, ForwardCompatibilitySubstitutionRule::Enable);
+                    }
+                    if (mainframe) {
+                        mainframe->update_side_preset_ui();
+                    }
+                });
+                request_user_logout();
+            }
+            else if (cmd == "user_login") {
+                // Extract user id, name, avatar, account, tokens from the login data
+                std::string user_uid;
+                std::string user_name;
+                std::string user_avatar;
+                std::string user_account;
+                std::string access_token;
+                std::string refresh_token;
+                std::string session_raw;
+                try {
+                    if (j.contains("data")) {
+                        auto& d = j["data"];
+                        if (d.contains("token"))         access_token  = d["token"].get<std::string>();
+                        if (d.contains("access_token"))  access_token  = d["access_token"].get<std::string>();
+                        if (d.contains("refresh_token")) refresh_token = d["refresh_token"].get<std::string>();
+                        if (d.contains("session_raw"))   session_raw   = d["session_raw"].get<std::string>();
+                        if (d.contains("user_id"))       user_uid      = d["user_id"].get<std::string>();
+
+                        if (d.contains("user") && d["user"].is_object()) {
+                            auto& u = d["user"];
+                            if (u.contains("id") && user_uid.empty())  user_uid = u["id"].get<std::string>();
+                            if (u.contains("uid") && user_uid.empty()) user_uid = u["uid"].get<std::string>();
+                            if (u.contains("name"))    user_name    = u["name"].get<std::string>();
+                            if (u.contains("avatar"))  user_avatar  = u["avatar"].get<std::string>();
+                            if (u.contains("account")) user_account = u["account"].get<std::string>();
+                            if (u.contains("email") && user_account.empty()) user_account = u["email"].get<std::string>();
+                            if (user_name.empty() && !user_account.empty()) {
+                                auto at_pos = user_account.find('@');
+                                user_name = (at_pos != std::string::npos) ? user_account.substr(0, at_pos) : user_account;
+                            }
+                        }
+                    }
+                } catch (...) {}
+
+                if (session_raw.empty()) {
+                    try {
+                        nlohmann::json s;
+                        s["access_token"]  = access_token;
+                        s["refresh_token"] = refresh_token;
+                        s["user"]["id"]    = user_uid;
+                        s["user"]["email"] = user_account;
+                        session_raw = s.dump();
+                    } catch (...) {}
+                }
+
+                // Determine isolated user preset directory
+                std::string user_folder = !user_uid.empty() ? user_uid : (!user_account.empty() ? user_account : user_name);
+                for (auto& c : user_folder) {
+                    if (c == '/' || c == '\\' || c == ':' || c == '*' || c == '?' || c == '"' || c == '<' || c == '>' || c == '|' || c == '@' || c == '.')
+                        c = '_';
+                }
+
+                // Persist Make3D Cloud user in AppConfig
+                if (app_config) {
+                    app_config->set("make3d_logged_in", "true");
+                    app_config->set("make3d_user_id", user_uid);
+                    app_config->set("make3d_user_name", user_name);
+                    app_config->set("make3d_user_email", user_account);
+                    app_config->set("make3d_access_token", access_token);
+                    app_config->set("make3d_refresh_token", refresh_token);
+                    app_config->set("make3d_session_raw", session_raw);
+                    if (!user_folder.empty()) {
+                        app_config->set("preset_folder", user_folder);
+                    }
+                    app_config->save();
+                }
+
+                if (mainframe && mainframe->m_webview) {
+                    if (!session_raw.empty()) {
+                        wxString jsStore = wxString::Format(
+                            "try{localStorage.setItem('make3d_session', %s);sessionStorage.setItem('make3d_session', %s);}catch(e){}",
+                            nlohmann::json(session_raw).dump(),
+                            nlohmann::json(session_raw).dump()
+                        );
+                        mainframe->m_webview->RunScript(jsStore);
+                    }
+                    nlohmann::json login_resp;
+                    login_resp["command"]     = "get_login_info";
+                    login_resp["is_login"]    = true;
+                    login_resp["login"]       = true;
+                    login_resp["name"]        = user_name;
+                    login_resp["nickname"]    = user_name;
+                    login_resp["user_name"]   = user_name;
+                    login_resp["email"]       = user_account;
+                    login_resp["user_id"]     = user_uid;
+                    login_resp["avatar"]      = user_avatar;
+                    login_resp["session_raw"] = session_raw;
+
+                    std::string resp_str = login_resp.dump();
+                    wxString strJS = wxString::FromUTF8("window.postMessage(" + resp_str + ");");
+                    mainframe->m_webview->RunScript(strJS);
+
+                    nlohmann::json uname_j = user_name;
+                    nlohmann::json uavatar_j = user_avatar;
+                    wxString directCall = wxString::FromUTF8(
+                        "if(typeof SetLoginInfo==='function'){SetLoginInfo(" + uavatar_j.dump() + ", " + uname_j.dump() + ");}"
+                    );
+                    mainframe->m_webview->RunScript(directCall);
+                    mainframe->m_webview->SetLoginPanelVisibility(true);
+                }
+
+                // Isolate user presets on login: switch to user_folder
+                if (!user_folder.empty() && preset_bundle) {
+                    preset_bundle->remove_users_preset(*app_config);
+                    preset_bundle->update_user_presets_directory(user_folder);
+                    preset_bundle->load_user_presets(user_folder, ForwardCompatibilitySubstitutionRule::Enable);
+                    if (mainframe) {
+                        mainframe->update_side_preset_ui();
+                    }
+                }
+                // Make3D Auto-Sync: trigger cloud download in homepage WebView
+                if (mainframe && mainframe->m_webview) {
+                    mainframe->m_webview->RunScript(
+                        "if(typeof AutoDownloadFromCloud==='function'){setTimeout(AutoDownloadFromCloud,1500);}");
+                }
+
+                // Also update the cloud agent session
                 if (m_agent) {
                     m_agent->change_user(j.dump(), provider);
                     if (m_agent->is_user_login(provider)) {
                         request_user_login(1, provider);
                     }
                 }
+            }
+            else if (cmd == "import_cloud_presets") {
+                if (!j.contains("presets")) return;
+                json presets_to_import = j["presets"];
+                std::string user_folder;
+                if (j.contains("user_id")) user_folder = j["user_id"].get<std::string>();
+                if (user_folder.empty() && app_config) {
+                    user_folder = app_config->get("preset_folder");
+                }
+                if (user_folder.empty()) user_folder = DEFAULT_USER_FOLDER_NAME;
+                // Sanitize folder name
+                for (auto& c : user_folder) {
+                    if (c == '/' || c == '\\' || c == ':' || c == '*' || c == '?' || c == '"' || c == '<' || c == '>' || c == '|' || c == '@' || c == '.')
+                        c = '_';
+                }
+
+                CallAfter([this, presets_to_import, user_folder] {
+                    try {
+                        namespace fs = boost::filesystem;
+                        std::string data_dir_str = Slic3r::data_dir();
+                        fs::path presets_root = fs::path(data_dir_str) / "user" / user_folder;
+                        int imported = 0;
+
+                        for (const auto& entry : presets_to_import) {
+                            if (!entry.contains("preset_type") || !entry.contains("preset_name") || !entry.contains("preset_data"))
+                                continue;
+                            std::string pt_name  = entry["preset_type"].get<std::string>();
+                            std::string pt_fname = entry["preset_name"].get<std::string>();
+                            json        pt_data  = entry["preset_data"];
+                            // Sanitize filename
+                            for (auto& c : pt_fname) {
+                                if (c == '/' || c == '\\' || c == ':' || c == '*' || c == '?' || c == '"' || c == '<' || c == '>' || c == '|')
+                                    c = '_';
+                            }
+                            fs::path type_dir = presets_root / pt_name;
+                            fs::create_directories(type_dir);
+                            fs::path out_path = type_dir / (pt_fname + ".json");
+                            std::ofstream ofs(out_path.string());
+                            if (ofs.is_open()) {
+                                ofs << pt_data.dump(2);
+                                imported++;
+                            }
+                        }
+
+                        // Reload presets from user folder
+                        if (app_config) app_config->set("preset_folder", user_folder);
+                        if (preset_bundle) {
+                            preset_bundle->remove_users_preset(*app_config);
+                            preset_bundle->update_user_presets_directory(user_folder);
+                            preset_bundle->load_user_presets(user_folder, ForwardCompatibilitySubstitutionRule::Enable);
+                        }
+                        if (mainframe) mainframe->update_side_preset_ui();
+                        BOOST_LOG_TRIVIAL(info) << "[Make3D AutoSync] Imported " << imported << " presets for user " << user_folder;
+                    } catch (std::exception& e) {
+                        BOOST_LOG_TRIVIAL(error) << "[Make3D AutoSync] import_cloud_presets failed: " << e.what();
+                    }
+                });
+            }
+            // ── Make3D Cloud Sync: Read local presets for upload (called by home.js DoAutoUpload) ─────────
+            else if (cmd == "get_user_presets_json") {
+                std::string sequence_id;
+                std::string user_folder;
+                if (j.contains("sequence_id")) sequence_id = j["sequence_id"].get<std::string>();
+                if (j.contains("user_id"))     user_folder = j["user_id"].get<std::string>();
+                if (user_folder.empty() && app_config) {
+                    user_folder = app_config->get("preset_folder");
+                }
+                if (user_folder.empty()) user_folder = DEFAULT_USER_FOLDER_NAME;
+                // Sanitize
+                for (auto& c : user_folder) {
+                    if (c == '/' || c == '\\' || c == ':' || c == '*' || c == '?' || c == '"' || c == '<' || c == '>' || c == '|' || c == '@' || c == '.')
+                        c = '_';
+                }
+
+                CallAfter([this, sequence_id, user_folder] {
+                    try {
+                        namespace fs = boost::filesystem;
+                        std::string data_dir_str = Slic3r::data_dir();
+                        json presets_array = json::array();
+                        const std::vector<std::string> preset_types = {"process", "filament", "machine"};
+
+                        // Only scan the user's own folder (NO fallback to default)
+                        fs::path presets_root = fs::path(data_dir_str) / "user" / user_folder;
+                        if (fs::exists(presets_root)) {
+                            for (const auto& pt_name : preset_types) {
+                                fs::path type_dir = presets_root / pt_name;
+                                if (!fs::exists(type_dir)) continue;
+                                for (fs::directory_iterator it(type_dir); it != fs::directory_iterator(); ++it) {
+                                    if (it->path().extension() != ".json") continue;
+                                    std::string stem_name = it->path().stem().string();
+                                    try {
+                                        std::ifstream ifs(it->path().string());
+                                        if (!ifs.is_open()) continue;
+                                        std::string content((std::istreambuf_iterator<char>(ifs)),
+                                                             std::istreambuf_iterator<char>());
+                                        json preset_j = json::parse(content);
+                                        json entry;
+                                        entry["preset_type"] = pt_name;
+                                        entry["preset_name"] = stem_name;
+                                        entry["preset_data"] = preset_j;
+                                        presets_array.push_back(entry);
+                                    } catch (...) {}
+                                }
+                            }
+                        }
+
+                        // Send response back to homepage WebView
+                        if (mainframe && mainframe->m_webview) {
+                            json resp;
+                            resp["command"]     = "presets_data";
+                            resp["sequence_id"] = sequence_id;
+                            resp["presets"]     = presets_array;
+                            wxString js = wxString::Format("window.postMessage(%s)", wxString::FromUTF8(resp.dump()));
+                            mainframe->m_webview->RunScript(js);
+                        }
+                        BOOST_LOG_TRIVIAL(info) << "[Make3D AutoSync] Exported " << presets_array.size() << " presets for upload, user " << user_folder;
+                    } catch (std::exception& e) {
+                        BOOST_LOG_TRIVIAL(error) << "[Make3D AutoSync] get_user_presets_json failed: " << e.what();
+                    }
+                });
             }
         }
     }
@@ -5939,6 +6483,11 @@ void GUI_App::check_new_version_sf(bool show_tips, int by_user)
     AppConfig* app_config = wxGetApp().app_config;
     bool       check_stable_only = app_config->get_bool("check_stable_update_only");
     auto version_check_url = app_config->version_check_url();
+    if (version_check_url.empty() || version_check_url.find("orcaslicer.com") != std::string::npos) {
+        if (by_user != 0 && show_tips)
+            this->no_new_version();
+        return;
+    }
 
     UpdaterQuery query{
         detect_updater_iid(app_config),

@@ -582,7 +582,7 @@ public:
     void set_default_filaments_and_colors()
     {
         m_filaments_count = 1;
-        m_filaments_colors.push_back(*wxGREEN);
+        m_filaments_colors.push_back(wxColour(0, 144, 255)); // Make3D Theme Blue
         m_filaments_name.push_back("Generic PLA");
     }
 

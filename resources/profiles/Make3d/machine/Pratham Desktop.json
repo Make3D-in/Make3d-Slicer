@@ -1,0 +1,13 @@
+{
+    "type": "machine_model",
+    "name": "Pratham Desktop",
+    "model_id": "M3DDESK",
+    "nozzle_diameter": "0.3;0.4",
+    "machine_tech": "FFF",
+    "family": "Make3d",
+    "default_bed_type": "",
+    "bed_model": "",
+    "bed_texture": "Make3d Bed Texture.png",
+    "hotend_model": "",
+    "default_materials": "Make3d PLA+"
+}

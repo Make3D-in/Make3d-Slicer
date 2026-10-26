@@ -1,7 +1,7 @@
 var m_ProfileItem;
 
 var FilamentPriority = new Array( "pla","abs","pet","tpu","pc");
-var VendorPriority   = new Array("generic");
+var VendorPriority   = new Array("make3d", "make 3d", "generic");
 
 function RequestProfile()
 {
@@ -49,19 +49,20 @@ function SortUI()
 	//	$('#MachineList').hide();
 	//}
 	
-	//Filament - Create sorted array with generic vendor first
+	//Filament - Only keep Make3D vendor filaments
 	let FilamentArray=new Array();
 	let GenericFilamentArray=new Array();
 	for( let key in m_ProfileItem['filament'] )
 	{
 		let OneFila=m_ProfileItem['filament'][key];
-		if(OneFila['vendor'].toLowerCase() === 'generic')
-			GenericFilamentArray.push({key: key, data: OneFila});
-		else
-			FilamentArray.push({key: key, data: OneFila});
+		let vLower = (OneFila['vendor'] || '').toLowerCase().trim();
+		// Only keep Make3D filaments
+		if (vLower.indexOf('make3d') < 0 && vLower.indexOf('make 3d') < 0) {
+			continue;
+		}
+		FilamentArray.push({key: key, data: OneFila});
 	}
-	// Combine arrays with generic filaments first
-	let SortedFilamentArray = GenericFilamentArray.concat(FilamentArray);
+	let SortedFilamentArray = FilamentArray;
 	
 	let HtmlFilament='';
 	let SelectNumber=0;
@@ -476,6 +477,11 @@ function ChooseDefaultFilament()
 			
 		if(HasModel)
 		    $(OneFF).prop("checked",true);
+	}
+	
+	// Default to checking all Make3D filaments if none were pre-selected
+	if ($("#ItemBlockArea input:checked").length === 0) {
+		$("#ItemBlockArea input").prop("checked", true);
 	}
 	
 	ShowNotice(0);

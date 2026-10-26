@@ -1,269 +1,257 @@
-<!doctype html>
-<html>
+<!DOCTYPE html>
+<html lang="en">
 <head>
-<meta charset="utf-8">
-<meta http-equiv="Cache-Control" content="max-age=7200" />
-<meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" name="viewport" />	
-<title>homepage</title>
-<link rel="stylesheet" type="text/css" href="../include/global.css" />	<!-- ORCA One for all-->
-<link rel="stylesheet" type="text/css" href="./css/home.css" />
-<link rel="stylesheet" type="text/css" href="./css/dark.css" />	
-
-<script type="text/javascript" src="../include/jquery-2.1.1.min.js"></script>
-<script type="text/javascript" src="../include/json2.js"></script>	
-<script type="text/javascript" src="../include/globalapi.js"></script>	
-
-<link rel="stylesheet" type="text/css" href="../include/swiper/swiper-bundle.min.css" />
-<script type="text/javascript" src="../include/swiper/swiper-bundle.min.js"></script>
-<script type="text/javascript" src="../data/text.js"></script>		
-	
-<script type="text/javascript" src="js/home.js"></script>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Make3D Slicer</title>
+    <link rel="stylesheet" type="text/css" href="css/home.css">
+    <script type="text/javascript" src="../include/jquery-2.1.1.min.js"></script>
+    <script type="text/javascript" src="../include/json2.js"></script>
+    <script type="text/javascript" src="../include/globalapi.js"></script>
+    <script type="text/javascript" src="../data/text.js"></script>
+    <script type="text/javascript" src="js/home.js"></script>
 </head>
-<body class="ZScrol" onLoad="OnInit()">
-<div id="LeftBoard">
-	<div id="LoginArea">
+<body style="background-color: #14171c; color: #f0f3f6; margin: 0; padding: 0; overflow: hidden;" onload="OnInit()">
+    <div id="MainApp">
+        <!-- Sidebar -->
+        <aside id="LeftBoard">
+            <!-- Brand Section -->
+            <div class="brand-container">
+                <div class="brand-logo-wrap">
+                    <img src="img/make3d_brand_logo.png" alt="Make3D Logo" class="brand-logo" onerror="this.src='img/a.jpg'">
+                </div>
+                <div class="brand-text">
+                    <span class="brand-title">Make3D</span>
+                    <span class="brand-sub">Slicer</span>
+                </div>
+            </div>
 
-	<!-- Orca Login Section -->
-	<div id="OrcaSectionLabel" class="AccountSectionLabel">
-		<img class="AccountSectionIcon" src="../../images/OrcaSlicer_gradient_circle.svg" alt="" />
-		<span class="trans OrcaAccountText" tid="orca7">Orca Cloud</span>
-	</div>
+            <!-- User Auth Card -->
+            <div class="user-card-wrap">
+                <!-- Logged Out State -->
+                <div id="LoginBlock" class="user-card">
+                    <div class="avatar-ring">
+                        <div class="avatar-svg-wrap">
+                        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="color:var(--text-muted)">
+                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                            <circle cx="12" cy="7" r="4"/>
+                        </svg>
+                    </div>
+                    </div>
+                    <div class="user-info">
+                        <div class="user-name">Guest User</div>
+                        <div class="user-status-badge offline">
+                            <span class="dot"></span> Not signed in
+                        </div>
+                    </div>
+                    <button id="LoginBtn" class="make3d-btn btn-primary" onclick="OnLoginOrRegister()">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/>
+                            <polyline points="10 17 15 12 10 7"/>
+                            <line x1="15" y1="12" x2="3" y2="12"/>
+                        </svg>
+                        <span>Sign In / Register</span>
+                    </button>
+                </div>
 
-		<div id="OrcaLoginSection">
-			<div id="OrcaLogin1">
-				<div id="Icon1"><img id="BBLIcon" src="../image/logo.png" /></div> <!-- ORCA use square icon for better consistency on UI -->
-				<div id="LoginBtn" class="ButtonStyleRegular ButtonTypeWindow" onClick="OnLoginOrRegister()"><span class="trans" tid="t26">login</span> / <span class="trans" tid="t27">register</span></div>
-				<div id="OrcaStatusText" class="AccountStatusText trans" tid="orca8">Not signed in</div>
-			</div>
+                <!-- Logged In State -->
+                <div id="LogoutBlock" class="user-card logged-in" style="display: none;">
+                    <div class="avatar-ring online-ring">
+                        <div class="avatar-svg-wrap">
+                        <img id="UserAvatarImg" src="" alt="Avatar" class="avatar-img" style="display:none;" onerror="this.style.display='none';document.getElementById('UserAvatarSvg').style.display='flex'">
+                        <svg id="UserAvatarSvg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="color:var(--accent-cyan)">
+                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                            <circle cx="12" cy="7" r="4"/>
+                        </svg>
+                    </div>
+                    </div>
+                    <div class="user-info">
+                        <div id="UserNickName" class="user-name">Make3D Member</div>
+                        <div class="user-status-badge online">
+                            <span class="dot"></span> Cloud Connected
+                        </div>
+                    </div>
 
-		<div id="OrcaLogin2">
-			<div>
-				<img id="UserAvatarIcon" src="img/c.jpg" onerror="this.onerror=null;this.src='img/c.jpg';" />
-			</div>
-			<div id="UserName" class="TextS1"></div>
-			<div id="LogoutBtn" class="ButtonStyleAlert ButtonTypeWindow trans" tid="t50" onClick="OnLogOut()">log out</div>
-		</div>
-	</div>
+                    <button id="LogoutBtn" class="make3d-btn btn-outline-danger" onclick="OnLogOut()">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+                            <polyline points="16 17 21 12 16 7"/>
+                            <line x1="21" y1="12" x2="9" y2="12"/>
+                        </svg>
+                        <span>Log Out</span>
+                    </button>
+                </div>
+            </div>
 
-	<!-- Bambu Cloud Section -->
-	<div id="BambuCloudSection">
-		<div id="BambuCloudHeader" onClick="ToggleBambuSection()">
-			<svg class="bambu-chevron" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
-				<path d="M4.5 2.5L8 6L4.5 9.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-			</svg>
-			<span class="trans" tid="orca6">Bambu Cloud</span>
-			<span class="bambu-status-dot"></span>
-		</div>
+            <!-- Navigation Links -->
+            <nav class="nav-menu">
+                <div class="nav-group-label">NAVIGATION</div>
+                <div class="nav-item active" onclick="GotoMenu('recent')">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="10"/>
+                        <polyline points="12 6 12 12 16 14"/>
+                    </svg>
+                    <span>Recent Projects</span>
+                </div>
+                <div class="nav-item" onclick="OnOpenCloudSync()">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M21.2 15c.7-1.2 1-2.5.7-3.9-.6-2-2.4-3.5-4.4-3.5h-1.2c-.7-3-3.2-5.2-6.2-5.2-3.2 0-5.9 2.4-6.3 5.6C2.1 8.5 1 10.3 1 12.3c0 2.6 2 4.7 4.6 4.7H20"/>
+                        <polyline points="16 16 12 12 8 16"/>
+                        <line x1="12" y1="12" x2="12" y2="21"/>
+                    </svg>
+                    <span>Cloud Presets Sync</span>
+                </div>
+                <div class="nav-item" onclick="OpenUrlInLocalBrowser('https://make3d.in')">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="10"/>
+                        <line x1="2" y1="12" x2="22" y2="12"/>
+                        <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+                    </svg>
+                    <span>Make3D Website</span>
+                    <svg class="ext-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
+                        <polyline points="15 3 21 3 21 9"/>
+                        <line x1="10" y1="14" x2="21" y2="3"/>
+                    </svg>
+                </div>
+                <div class="nav-item" onclick="OpenUrlInLocalBrowser('https://make3d.in/contact')">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="10"/>
+                        <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/>
+                        <line x1="12" y1="17" x2="12.01" y2="17"/>
+                    </svg>
+                    <span>Support & Help</span>
+                    <svg class="ext-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
+                        <polyline points="15 3 21 3 21 9"/>
+                        <line x1="10" y1="14" x2="21" y2="3"/>
+                    </svg>
+                </div>
+            </nav>
 
-		<div id="BambuCloudBody">
-			<div id="BambuLogin1">
-				<div id="BambuLoginBtn" class="ButtonStyleRegular ButtonTypeWindow" onClick="OnBambuLoginOrRegister()"><span class="trans" tid="t26">login</span></div>
-			</div>
+            <!-- Footer Version -->
+            <div class="sidebar-footer">
+                <div class="version-tag">Make3D Slicer v1.0.0</div>
+                <div class="copy-tag">Powered by Make3D Cloud</div>
+            </div>
+        </aside>
 
-			<div id="BambuLogin2">
-				<div>
-					<img id="BambuAvatarIcon" src="img/c.jpg" onerror="this.onerror=null;this.src='img/c.jpg';" />
-				</div>
-				<div id="BambuUserName" class="TextS1"></div>
-				<div id="BambuLogoutBtn" class="ButtonStyleAlert ButtonTypeWindow trans" tid="t50" onClick="OnBambuLogOut()">log out</div>
-			</div>
+        <!-- Main Content Area -->
+        <main id="RightBoard">
+            <div class="content-wrapper">
+                <!-- Hero Quick Actions -->
+                <section class="quick-actions-section">
+                    <div class="section-heading">
+                        <h2>Quick Start</h2>
+                        <p>Create a new 3D model project or open an existing file to slice</p>
+                    </div>
 
-			<div id="NoPluginTip">
-				<div id="NoPluginText"><a class="RedFont trans" tid="t76">Network plugin not detected. Click </a><a Class="LinkBtn trans" onClick="BeginDownloadNetworkPlugin()" tid="t77">here</a><a class="RedFont trans" tid="t78"> to install it.</a></div>
-			</div>
-		</div>
-	</div>
+                    <div class="action-cards-grid">
+                        <!-- New Project Action Card -->
+                        <div id="ActionNewProject" class="action-card primary-action" onclick="OnClickNewProject()">
+                            <div class="action-card-glow"></div>
+                            <div class="action-icon-box">
+                                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                    <line x1="12" y1="5" x2="12" y2="19"/>
+                                    <line x1="5" y1="12" x2="19" y2="12"/>
+                                </svg>
+                            </div>
+                            <div class="action-details">
+                                <h3>New Project</h3>
+                                <p>Start slicing on a fresh, clean 3D build plate</p>
+                            </div>
+                            <div class="action-arrow">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                    <polyline points="9 18 15 12 9 6"/>
+                                </svg>
+                            </div>
+                        </div>
 
-	</div>
+                        <!-- Open Project Action Card -->
+                        <div id="ActionOpenProject" class="action-card secondary-action" onclick="OnClickOpenProject()">
+                            <div class="action-card-glow"></div>
+                            <div class="action-icon-box">
+                                <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
+                                    <polyline points="12 11 12 17 9 14"/>
+                                    <polyline points="12 17 15 14"/>
+                                </svg>
+                            </div>
+                            <div class="action-details">
+                                <h3>Open Project</h3>
+                                <p>Browse and import .3mf, .stl, or .step project files</p>
+                            </div>
+                            <div class="action-arrow">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                    <polyline points="9 18 15 12 9 6"/>
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
+                </section>
 
-	<div id="BtnArea">
-	    <div menu="recent" class="BtnItem BtnItemSelected" onClick="GotoMenu('recent')">
-			<div class="BtnIcon "><img class="LeftIcon" src="img/i2.png" /></div>
-			<div class="trans" tid="t28">recent</div> 
-		</div>
-	    <div class="BtnItem BtnShortcut" onClick="OpenUrlInLocalBrowser('https://cloud.orcaslicer.com')">
-			<div class="BtnIcon "><img class="ShortcutBrandIcon" src="../image/logo.png" /></div>
-			<div class="ShortcutTextRow">
-				<div>OrcaCloud</div>
-				<svg class="ShortcutMark" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-					<path d="M6 3.5H3.5C2.95 3.5 2.5 3.95 2.5 4.5V12.5C2.5 13.05 2.95 13.5 3.5 13.5H11.5C12.05 13.5 12.5 13.05 12.5 12.5V10" stroke="currentColor" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round"/>
-					<path d="M8.5 3.5H13.5V8.5" stroke="currentColor" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round"/>
-					<path d="M13.5 3.5L7 10" stroke="currentColor" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round"/>
-				</svg>
-			</div>
-		</div>
+                <!-- Recent Files Section -->
+                <section class="recent-projects-section">
+                    <div class="recent-header">
+                        <div class="recent-title-group">
+                            <h2>Recent Projects</h2>
+                            <span id="RecentCountBadge" class="count-badge">0 files</span>
+                        </div>
+                        <button id="RecentClearAllBtn" class="make3d-btn btn-ghost-danger" onclick="OnDeleteAllRecentFiles()" style="display: none;">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="3 6 5 6 21 6"/>
+                                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                            </svg>
+                            <span>Clear All</span>
+                        </button>
+                    </div>
 
-	</div>
-</div>
+                    <!-- File List Container -->
+                    <div id="FileList" class="recent-files-grid">
+                        <!-- Populated dynamically -->
+                    </div>
 
-<div id="RightBoard">
-<div id="ContentBoard" class="ZScrol" board="recent">
-    <div style="height: 14px;"></div>	
-	<div id="MenuArea">
-<!--		<div class="MenuItem" onClick="OnClickModelDepot()">
-			<div class="MenuIcon"><img src="img/i6.png"></div>
-			<div>
-				<div class="trans TextS1" tid="t90">3D Model</div>
-				<div class="MenuDesc trans"  tid="t91">Download 3D Models</div>
-			</div>
-		</div>	-->	
-		<div class="MenuItem" onClick="OnClickNewProject()">
-			<div class="MenuIcon"><img src="img/i4.png"></div>
-			<div>
-				<div class="trans TextS1" tid="t31">new project</div>
-				<div class="MenuDesc trans"  tid="t32">create new project</div>
-			</div>
-		</div>
-		<div class="MenuItem" onClick="OnClickOpenProject()">
-			<div class="MenuIcon"><img src="img/i5.png"></div>
-			<div>
-				<div class="trans TextS1" tid="t33">open project</div>
-				<div class="MenuDesc">3mf</div>
-			</div>
-		</div>		
-	</div>
-	
-	<div id="DebugText"></div>	
-	<div id="RecentFileArea">
-		<div id="RecentTitleBlock">
-		    <div id="RecentTitle" class="Content-Title trans TextS1" tid="t35">recent open</div>
-			<div id="RecentClearAllBtn" class="ButtonStyleRegular ButtonTypeWindow trans" tid="t12" onClick="OnDeleteAllRecentFiles()">Clear all</div>
-		</div>
-		<div id="FileList">
-<!--		    <div class="FileItem" onClick="OnOpenRecentFile('aaaa')" fpath='d:\model\11.3mf'>
-				<a class="FileTip" title="d:\model\11.3mf"></a>
-				<div class="FileImg"><img src="img/d.png"/></div>
-				<div class="FileName TextS1">abcd12334abcd12334abcd12334.3mf</div>
-				<div class="FileDate">2021/12/27 09:22</div>
-			</div>
-		    <div class="FileItem" onClick="OnOpenRecentFile('aaaa')" fpath='d:\model\11.3mf'>
-				<a class="FileTip" title="d:\model\11.3mf"></a>
-				<div class="FileImg"><img src="img/d.png"/></div>
-				<div class="FileName TextS1">abcd12334abcd12334abcd12334.3mf</div>
-				<div class="FileDate">2021/12/27 09:22</div>
-			</div>
-		    <div class="FileItem" onClick="OnOpenRecentFile('aaaa')" fpath='d:\model\11.3mf'>
-				<a class="FileTip" title="d:\model\11.3mf"></a>
-				<div class="FileImg"><img src="img/d.png"/></div>
-				<div class="FileName TextS1">abcd12334abcd12334abcd12334.3mf</div>
-				<div class="FileDate">2021/12/27 09:22</div>
-			</div>
-		    <div class="FileItem" onClick="OnOpenRecentFile('aaaa')" fpath='d:\model\11.3mf'>
-				<a class="FileTip" title="d:\model\11.3mf"></a>
-				<div class="FileImg"><img src="img/d.png"/></div>
-				<div class="FileName TextS1">abcd12334abcd12334abcd12334.3mf</div>
-				<div class="FileDate">2021/12/27 09:22</div>
-			</div>
-		    <div class="FileItem" onClick="OnOpenRecentFile('aaaa')" fpath='d:\model\11.3mf'>
-				<a class="FileTip" title="d:\model\11.3mf"></a>
-				<div class="FileImg"><img src="img/d.png"/></div>
-				<div class="FileName TextS1">abcd12334abcd12334abcd12334.3mf</div>
-				<div class="FileDate">2021/12/27 09:22</div>
-			</div>
-		    <div class="FileItem" onClick="OnOpenRecentFile('aaaa')" fpath='d:\model\11.3mf'>
-				<a class="FileTip" title="d:\model\11.3mf"></a>
-				<div class="FileImg"><img src="img/d.png"/></div>
-				<div class="FileName TextS1">abcd12334abcd12334abcd12334.3mf</div>
-				<div class="FileDate">2021/12/27 09:22</div>
-			</div>
-		    <div class="FileItem" onClick="OnOpenRecentFile('aaaa')" fpath='d:\model\11.3mf'>
-				<a class="FileTip" title="d:\model\11.3mf"></a>
-				<div class="FileImg"><img src="img/d.png"/></div>
-				<div class="FileName TextS1">abcd12334abcd12334abcd12334.3mf</div>
-				<div class="FileDate">2021/12/27 09:22</div>
-			</div>
-		    <div class="FileItem" onClick="OnOpenRecentFile('aaaa')" fpath='d:\model\11.3mf'>
-				<a class="FileTip" title="d:\model\11.3mf"></a>
-				<div class="FileImg"><img src="img/d.png"/></div>
-				<div class="FileName TextS1">abcd12334abcd12334abcd12334.3mf</div>
-				<div class="FileDate">2021/12/27 09:22</div>
-			</div>
-		    <div class="FileItem" onClick="OnOpenRecentFile('aaaa')" fpath='d:\model\11.3mf'>
-				<a class="FileTip" title="d:\model\11.3mf"></a>
-				<div class="FileImg"><img src="img/d.png"/></div>
-				<div class="FileName TextS1">abcd12334abcd12334abcd12334.3mf</div>
-				<div class="FileDate">2021/12/27 09:22</div>
-			</div>
-		    <div class="FileItem" onClick="OnOpenRecentFile('aaaa')" fpath='d:\model\11.3mf'>
-				<a class="FileTip" title="d:\model\11.3mf"></a>
-				<div class="FileImg"><img src="img/d.png"/></div>
-				<div class="FileName TextS1">abcd12334abcd12334abcd12334.3mf</div>
-				<div class="FileDate">2021/12/27 09:22</div>
-			</div>
-		    <div class="FileItem" onClick="OnOpenRecentFile('aaaa')" fpath='d:\model\11.3mf'>
-				<a class="FileTip" title="d:\model\11.3mf"></a>
-				<div class="FileImg"><img src="img/d.png"/></div>
-				<div class="FileName TextS1">abcd12334abcd12334abcd12334.3mf</div>
-				<div class="FileDate">2021/12/27 09:22</div>
-			</div>
-		    <div class="FileItem" onClick="OnOpenRecentFile('aaaa')" fpath='d:\model\11.3mf'>
-				<a class="FileTip" title="d:\model\11.3mf"></a>
-				<div class="FileImg"><img src="img/d.png"/></div>
-				<div class="FileName TextS1">abcd12334abcd12334abcd12334.3mf</div>
-				<div class="FileDate">2021/12/27 09:22</div>
-			</div>	-->		
-		</div>
-	</div>
-	
-    <div style="height: 14px;"></div>	
-	
-	<div id="recnet_context_menu">
-		<div id="CT_Delete_Bar" class="CT_Item" onClick="OnDeleteRecentFile()">
-			<div class="CT_Icon CT_Delete"></div>
-			<div class="CT_Text trans" tid="t88">clear</div>
-		</div>
-		<div id="CT_Folder_Bar" class="CT_Item " onClick="OnExploreRecentFile()" >
-			<div class="CT_Icon CT_Explore"></div>
-			<div class="CT_Text trans" tid="t89">open in explorer </div>
-		</div>				
+                    <!-- Empty State -->
+                    <div id="EmptyRecentState" class="empty-state-card">
+                        <div class="empty-icon">
+                            <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/>
+                                <polyline points="13 2 13 9 20 9"/>
+                            </svg>
+                        </div>
+                        <h3>No Recent Projects</h3>
+                        <p>Your recently saved and opened 3D slice projects will show up here for quick access.</p>
+                        <button class="make3d-btn btn-secondary" onclick="OnClickNewProject()">Create New Project</button>
+                    </div>
+                </section>
+            </div>
+        </main>
     </div>
-	
-	
-</div>
 
-</div>	
+    <!-- Custom Context Menu for Recent Items -->
+    <div id="recnet_context_menu" class="custom-context-menu" style="display: none;">
+        <div id="CT_Open_Bar" class="context-menu-item" onclick="OnContextOpenProject()">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
+                <polyline points="15 3 21 3 21 9"/>
+                <line x1="10" y1="14" x2="21" y2="3"/>
+            </svg>
+            <span>Open Project</span>
+        </div>
+        <div id="CT_Folder_Bar" class="context-menu-item" onclick="OnExploreRecentFile()">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
+            </svg>
+            <span>Show in Explorer</span>
+        </div>
+        <div class="context-divider"></div>
+        <div id="CT_Delete_Bar" class="context-menu-item danger" onclick="OnDeleteRecentFile()">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="3 6 5 6 21 6"/>
+                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+            </svg>
+            <span>Remove from List</span>
+        </div>
+    </div>
 </body>
-<script type="text/javascript">
-	//HandleStudio(TestData);
-    document.onkeydown = function (event) {
-		var e = event || window.event || arguments.callee.caller.arguments[0];
-
-		if (e.ctrlKey && e.metaKey)
-			OutputKey(e.keyCode, true, false, true);
-		else if (e.ctrlKey)
-			OutputKey(e.keyCode, true, false, false);
-		else if (e.metaKey)
-			OutputKey(e.keyCode, false, false, true);
-
-		if (e.shiftKey && e.ctrlKey)
-			OutputKey(e.keyCode, true, true, false);
-
-		if (e.shiftKey && e.metaKey)
-			OutputKey(e.keyCode, false, true, true);
-
-		if (window.event) {
-			try { e.keyCode = 0; } catch (e) { }
-			e.returnValue = false;
-		}
-	};
-
-	window.addEventListener('mousewheel', function (event) {
-		if (event.ctrlKey === true || event.metaKey) {
-			event.preventDefault();
-		}
-	}, { passive: false });
-
-</script>
 </html>
-
-
-
-
-
-
-
-
-
-
-
-

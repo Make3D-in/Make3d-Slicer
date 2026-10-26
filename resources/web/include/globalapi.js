@@ -163,63 +163,6 @@ function GetGetStr()
 	return strGet;
 }
 
-/*--------------File Function--------------*/
-function getFileName(path) 
-{ 
-    var pos1 = path.lastIndexOf('/'); 
-    var pos2 = path.lastIndexOf('\\'); 
-    var pos = Math.max(pos1, pos2); 
-    if (pos < 0) { 
-      return null; 
-    } 
-    else 
-	{ 
-      return path.substring(pos + 1); 
-    } 
-}
-
-function getFileTail(path) 
-{ 
-    var pos = path.lastIndexOf('.');
-    if (pos < 0) { 
-		return null; 
-    } 
-    else 
-	{ 
-        return path.substring(pos + 1); 
-    } 
-}
-
-/*--------------String Function-----------*/
-function html_encode(str) 
-{
-	var s = ""; 
-    if (str.length == 0) return ""; 
-    s = str.replace(/&/g, "&amp;"); 
-    s = s.replace(/</g, "&lt;"); 
-    s = s.replace(/>/g, "&gt;"); 
-    s = s.replace(/ /g, "&nbsp;"); 
-    s = s.replace(/\'/g, "&#39;"); 
-    s = s.replace(/\"/g, "&quot;"); 
-    s = s.replace(/\n/g, "<br/>"); 
-    
-	return s; 
-} 
-
-function html_decode(str) 
-{ 
-	var s = ""; 
-	if (str.length == 0) return ""; 
-	s = str.replace(/&amp;/g, "&"); 
-	s = s.replace(/&lt;/g, "<"); 
-	s = s.replace(/&gt;/g, ">"); 
-	s = s.replace(/&nbsp;/g, " "); 
-	s = s.replace(/&#39;/g, "\'"); 
-	s = s.replace(/&quot;/g, "\""); 
-	s = s.replace(/<br\/>/g, "\n"); 
-
-	return s; 
-} 
 
 /*--------------------JSON  Function------------*/
 
@@ -242,16 +185,6 @@ function IsJson( strJson )
 	}	
 	
 	return tJson;
-}
-
-function DecodeJsonObject( pJson )
-{
-	let tmpJson=JSON.stringify(pJson);
-	tmpJson=decodeURIComponent(tmpJson);
-	
-	pJson=JSON.parse(tmpJson);
-	
-	return pJson;
 }
 
 /*-----------------------Ajax Function--------------------*/
@@ -336,32 +269,18 @@ function IsInSlicer()
 
 function SendWXMessage( strMsg )
 {
-	let bCheck=IsInSlicer();
-	
-	if(bCheck!=null)
-	{
-		window.wx.postMessage(strMsg);
-	}
-}
-
-function SendWXDebugInfo( strMsg )
-{
-	var tSend={};
-	tSend['sequence_id']=Math.round(new Date() / 1000);
-	tSend['command']="debug_info";
-	tSend['msg']=strMsg;
-
-	SendWXMessage( JSON.stringify(tSend) );		
-}
-
-function OpenUrlInLocalBrowser( strUrl )
-{
-	var tSend={};
-	tSend['sequence_id']=Math.round(new Date() / 1000);
-	tSend['command']="common_openurl";
-	tSend['url']=strUrl;
-
-	SendWXMessage( JSON.stringify(tSend) );		
+	try {
+		if (window.wx && window.wx.postMessage) {
+			window.wx.postMessage(strMsg);
+			return;
+		}
+	} catch(e) {}
+	try {
+		if (window.chrome && window.chrome.webview && window.chrome.webview.postMessage) {
+			window.chrome.webview.postMessage(strMsg);
+			return;
+		}
+	} catch(e) {}
 }
 
 
@@ -424,4 +343,4 @@ function ExecuteDarkMode( DarkCssPath )
 	}	
 }
 
-SwitchDarkMode( "./css/dark.css" );
+SwitchDarkMode("css/dark.css");

@@ -1,0 +1,41 @@
+{
+    "type": "process",
+    "setting_id": "M3DDET2510",
+    "inherits": "fdm_process_common",
+    "name": "0.25mm Detail @Regular 1.0",
+    "from": "system",
+    "instantiation": "true",
+    "compatible_printers": [
+        "Pratham X Nozzle 1.0",
+        "Pratham XL Nozzle 1.0"
+    ],
+    
+    "initial_layer_print_height": "0.30",
+    "layer_height": "0.25",
+    "bottom_shell_layers": "5",
+    "top_shell_layers": "5",
+
+    "line_width": "1.05",
+    "initial_layer_line_width": "1.25",
+    "outer_wall_line_width": "1.05",
+    "inner_wall_line_width": "1.12",
+    "top_surface_line_width": "1.05",
+    "sparse_infill_line_width": "1.08",
+    "internal_solid_infill_line_width": "1.08",
+    "support_line_width": "1.0",
+
+    "sparse_infill_density": "15%",
+    "sparse_infill_pattern": "grid",
+    
+    "support_top_z_distance": "0.23",
+    "support_bottom_z_distance": "0.25",
+
+    "max_travel_detour_distance": "150",
+
+    "wall_loops": "3",
+
+    "outer_wall_speed": "40",
+    "inner_wall_speed": "50",
+    "infill_speed": "50",
+    "initial_layer_speed": "25"
+}

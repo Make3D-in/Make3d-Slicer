@@ -1,0 +1,13 @@
+{
+    "type": "machine_model",
+    "name": "Pratham X",
+    "model_id": "M3DREGPX",
+    "nozzle_diameter": "0.4;0.5;0.6;0.8;1.0",
+    "machine_tech": "FFF",
+    "family": "Make3d",
+    "default_bed_type": "",
+    "bed_model": "",
+    "bed_texture": "Make3d Bed Texture.png",
+    "hotend_model": "",
+    "default_materials": "Make3d PLA+"
+}

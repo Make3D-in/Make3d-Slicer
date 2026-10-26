@@ -1,0 +1,518 @@
+{
+    "name": "Make3d",
+    "version": "02.03.00.03",
+    "fore_update": "1",
+    "description": "Make3d Configurations",
+    "machine_model_list":
+    [
+        {
+            "name": "Pratham 3.0",
+            "sub_path": "machine/Pratham 3.0.json" 
+        },
+        {
+            "name": "Pratham 5.0",
+            "sub_path": "machine/Pratham 5.0.json"
+        },
+        {
+            "name": "Pratham 6.0",
+            "sub_path": "machine/Pratham 6.0.json"
+        },
+        {
+            "name": "Pratham X",
+            "sub_path": "machine/Pratham X.json"
+        },
+        {
+            "name": "Pratham XL",
+            "sub_path": "machine/Pratham XL.json"
+        },
+        {
+            "name": "Pratham Rapid 3.0",
+            "sub_path": "machine/Pratham Rapid 3.0.json" 
+        },
+        {
+            "name": "Pratham Super",
+            "sub_path": "machine/Pratham Super.json"
+        },
+        {
+            "name": "Pratham Mini",
+            "sub_path": "machine/Pratham Mini.json"
+        },
+        {
+            "name": "Pratham Desktop",
+            "sub_path": "machine/Pratham Desktop.json"
+        }
+    ],
+    "process_list":
+    [
+        {
+            "name": "fdm_process_common",
+            "sub_path": "process/fdm_process_common.json"
+        },
+        {
+            "name": "0.08mm High Detail @Regular 0.4",
+            "sub_path": "process/0.08mm High Detail @Regular 0.4.json"
+        },
+        {
+            "name": "0.12mm Detail @Regular 0.4",
+            "sub_path": "process/0.12mm Detail @Regular 0.4.json"
+        },
+        {
+            "name": "0.20mm Standard @Regular 0.4",
+            "sub_path": "process/0.20mm Standard @Regular 0.4.json"
+        },
+        {
+            "name": "0.20mm Strong @Regular 0.4",
+            "sub_path": "process/0.20mm Strong @Regular 0.4.json"
+        },
+        {
+            "name": "0.24mm Functional @Regular 0.4",
+            "sub_path": "process/0.24mm Functional @Regular 0.4.json"
+        },
+        {
+            "name": "0.28mm Draft @Regular 0.4",
+            "sub_path": "process/0.28mm Draft @Regular 0.4.json"
+        },
+
+
+        {
+            "name": "0.08mm High Detail @Regular 0.3",
+            "sub_path": "process/0.08mm High Detail @Regular 0.3.json"
+        },
+        {
+            "name": "0.10mm Detail @Regular 0.3",
+            "sub_path": "process/0.10mm Detail @Regular 0.3.json"
+        },
+        {
+            "name": "0.12mm Standard @Regular 0.3",
+            "sub_path": "process/0.12mm Standard @Regular 0.3.json"
+        },
+        {
+            "name": "0.12mm Strong @Regular 0.3",
+            "sub_path": "process/0.12mm Strong @Regular 0.3.json"
+        },
+        {
+            "name": "0.14mm Functional @Regular 0.3",
+            "sub_path": "process/0.14mm Functional @Regular 0.3.json"
+        },
+
+
+        {
+            "name": "0.15mm Quality @Regular 0.5",
+            "sub_path": "process/0.15mm Quality @Regular 0.5.json"
+        },
+        {
+            "name": "0.20mm Detail @Regular 0.5",
+            "sub_path": "process/0.20mm Detail @Regular 0.5.json"
+        },
+        {
+            "name": "0.25mm Standard @Regular 0.5",
+            "sub_path": "process/0.25mm Standard @Regular 0.5.json"
+        },
+        {
+            "name": "0.25mm Strong @Regular 0.5",
+            "sub_path": "process/0.25mm Strong @Regular 0.5.json"
+        },
+        {
+            "name": "0.30mm Functional @Regular 0.5",
+            "sub_path": "process/0.30mm Functional @Regular 0.5.json"
+        },
+        {
+            "name": "0.35mm Draft @Regular 0.5",
+            "sub_path": "process/0.35mm Draft @Regular 0.5.json"
+        },
+        {
+            "name": "0.18mm Quality @Regular 0.6",
+            "sub_path": "process/0.18mm Quality @Regular 0.6.json"
+        },
+        {
+            "name": "0.24mm Detail @Regular 0.6",
+            "sub_path": "process/0.24mm Detail @Regular 0.6.json"
+        },
+        {
+            "name": "0.30mm Standard @Regular 0.6",
+            "sub_path": "process/0.30mm Standard @Regular 0.6.json"
+        },
+        {
+            "name": "0.30mm Strong @Regular 0.6",
+            "sub_path": "process/0.30mm Strong @Regular 0.6.json"
+        },
+        {
+            "name": "0.36mm Functional @Regular 0.6",
+            "sub_path": "process/0.36mm Functional @Regular 0.6.json"
+        },
+        {
+            "name": "0.42mm Draft @Regular 0.6",
+            "sub_path": "process/0.42mm Draft @Regular 0.6.json"
+        },
+        {
+            "name": "0.24mm Quality @Regular 0.8",
+            "sub_path": "process/0.24mm Quality @Regular 0.8.json"
+        },
+        {
+            "name": "0.32mm Detail @Regular 0.8",
+            "sub_path": "process/0.32mm Detail @Regular 0.8.json"
+        },
+        {
+            "name": "0.40mm Standard @Regular 0.8",
+            "sub_path": "process/0.40mm Standard @Regular 0.8.json"
+        },
+        {
+            "name": "0.40mm Strong @Regular 0.8",
+            "sub_path": "process/0.40mm Strong @Regular 0.8.json"
+        },
+        {
+            "name": "0.48mm Functional @Regular 0.8",
+            "sub_path": "process/0.48mm Functional @Regular 0.8.json"
+        },
+        {
+            "name": "0.56mm Draft @Regular 0.8",
+            "sub_path": "process/0.56mm Draft @Regular 0.8.json"
+        },
+        {
+            "name": "0.25mm Detail @Regular 1.0",
+            "sub_path": "process/0.25mm Detail @Regular 1.0.json"
+        },
+        {
+            "name": "0.3mm Detail @Regular 1.0",
+            "sub_path": "process/0.3mm Detail @Regular 1.0.json"
+        },
+        {
+            "name": "0.30mm High Quality @Regular 1.0",
+            "sub_path": "process/0.30mm High Quality @Regular 1.0.json"
+        },
+        {
+            "name": "0.35mm quality @Regular 1.0",
+            "sub_path": "process/0.35mm quality @Regular 1.0.json"
+        },
+        {
+            "name": "0.45mm Functional @Regular 1.0",
+            "sub_path": "process/0.45mm Functional @Regular 1.0.json"
+        },
+        {
+            "name": "0.5mm Standard @Regular 1.0",
+            "sub_path": "process/0.5mm Standard @Regular 1.0.json"
+        },
+        {
+            "name": "0.6mm working @Regular 1.0",
+            "sub_path": "process/0.6mm working @Regular 1.0.json"
+        },
+        {
+            "name": "0.8mm Draft @Regular 1.0",
+            "sub_path": "process/0.8mm Draft @Regular 1.0.json"
+        },
+        {
+            "name": "fdm_process_rapid",
+            "sub_path": "process/fdm_process_rapid.json"
+        },
+        {
+            "name": "0.20mm Standard @Rapid 0.4",
+            "sub_path": "process/0.20mm Standard @Rapid 0.4.json"
+        },
+        {
+            "name": "0.08mm High Detail @Rapid 0.4",
+            "sub_path": "process/0.08mm High Detail @Rapid 0.4.json"
+        },
+        {
+            "name": "0.12mm Detail @Rapid 0.4",
+            "sub_path": "process/0.12mm Detail @Rapid 0.4.json"
+        },
+        {
+            "name": "0.20mm Strong @Rapid 0.4",
+            "sub_path": "process/0.20mm Strong @Rapid 0.4.json"
+        },
+        {
+            "name": "0.24mm Functional @Rapid 0.4",
+            "sub_path": "process/0.24mm Functional @Rapid 0.4.json"
+        },
+        {
+            "name": "0.28mm Draft @Rapid 0.4",
+            "sub_path": "process/0.28mm Draft @Rapid 0.4.json"
+        },
+        {
+            "name": "0.15mm High Detail @Rapid 0.5",
+            "sub_path": "process/0.15mm High Detail @Rapid 0.5.json"
+        },
+        {
+            "name": "0.20mm Detail @Rapid 0.5",
+            "sub_path": "process/0.20mm Detail @Rapid 0.5.json"
+        },
+        {
+            "name": "0.25mm Standard @Rapid 0.5",
+            "sub_path": "process/0.25mm Standard @Rapid 0.5.json"
+        },
+        {
+            "name": "0.25mm Strong @Rapid 0.5",
+            "sub_path": "process/0.25mm Strong @Rapid 0.5.json"
+        },
+        {
+            "name": "0.32mm Functional @Rapid 0.5",
+            "sub_path": "process/0.32mm Functional @Rapid 0.5.json"
+        },
+        {
+            "name": "0.35mm Draft @Rapid 0.5",
+            "sub_path": "process/0.35mm Draft @Rapid 0.5.json"
+        },
+        {
+            "name": "fdm_process_tpu_common",
+            "sub_path": "process/fdm_process_tpu_common.json"
+        },
+        {
+            "name": "TPU 0.08 @Regular",
+            "sub_path": "process/TPU 0.08 @Regular.json"
+        },
+        {
+            "name": "TPU 0.15 @Regular",
+            "sub_path": "process/TPU 0.15 @Regular.json"
+        },
+        {
+            "name": "TPU 0.20 @Regular",
+            "sub_path": "process/TPU 0.20 @Regular.json"
+        },
+        {
+            "name": "TPU 0.24 @Regular",
+            "sub_path": "process/TPU 0.24 @Regular.json"
+        },
+        {
+            "name": "TPU 0.30 @Regular",
+            "sub_path": "process/TPU 0.30 @Regular.json"
+        },
+        {
+            "name": "TPU 0.35 @Regular",
+            "sub_path": "process/TPU 0.35 @Regular.json"
+        },
+        {
+            "name": "TPU 0.40 @Regular",
+            "sub_path": "process/TPU 0.40 @Regular.json"
+        },
+        {
+            "name": "TPU 0.45 @Regular",
+            "sub_path": "process/TPU 0.45 @Regular.json"
+        },
+        {
+            "name": "TPU 0.50 @Regular",
+            "sub_path": "process/TPU 0.50 @Regular.json"
+        }
+    ],
+    "filament_list":
+    [
+        {
+            "name": "fdm_filament_common",
+            "sub_path": "filament/fdm_filament_common.json"
+        },
+        {
+            "name": "fdm_common_pla",
+            "sub_path": "filament/fdm_common_pla.json"
+        },
+        {
+            "name": "Make3d PLA+",
+            "sub_path": "filament/Make3d PLA+.json"
+        },
+        {
+            "name": "Make3d PLA+ Rapid",
+            "sub_path": "filament/Make3d PLA+ Rapid.json"
+        },
+        {
+            "name": "Make3d PLA-CF",
+            "sub_path": "filament/Make3d PLA-CF.json"
+        },
+        {
+            "name": "fdm_common_pva",
+            "sub_path": "filament/fdm_common_pva.json"
+        },
+        {
+            "name": "Make3d PVA",
+            "sub_path": "filament/Make3d PVA.json"
+        },
+        {
+            "name": "fdm_common_abs",
+            "sub_path": "filament/fdm_common_abs.json"
+        },
+        {
+            "name": "Make3d ABS",
+            "sub_path": "filament/Make3d ABS.json"
+        },
+        {
+            "name": "ABS-CF XT",
+            "sub_path": "filament/ABS-CF XT.json"
+        },
+        {
+            "name": "fdm_common_asa",
+            "sub_path": "filament/fdm_common_asa.json"
+        },
+        {
+            "name": "Make3d ASA",
+            "sub_path": "filament/Make3d ASA.json"
+        },
+        {
+            "name": "fdm_common_petg",
+            "sub_path": "filament/fdm_common_petg.json"
+        },
+        {
+            "name": "Make3d PETG",
+            "sub_path": "filament/Make3d PETG.json"
+        },
+        {
+            "name": "fdm_common_hips",
+            "sub_path": "filament/fdm_common_hips.json"
+        },
+        {
+            "name": "Make3d HIPS",
+            "sub_path": "filament/Make3d HIPS.json"
+        },
+        {
+            "name": "fdm_common_tpu",
+            "sub_path": "filament/fdm_common_tpu.json"
+        },
+        {
+            "name": "Make3d TPU",
+            "sub_path": "filament/Make3d TPU.json"
+        },
+        {
+            "name": "fdm_common_PA",
+            "sub_path": "filament/fdm_common_PA.json"
+        },
+        {
+            "name": "Make3d PA12",
+            "sub_path": "filament/Make3d PA12.json"
+        },
+        {
+            "name": "Make3d PA-CF",
+            "sub_path": "filament/Make3d PA-CF.json"
+        }
+    ],
+    "machine_list":
+    [
+        {
+            "name": "fdm_machine_common",
+            "sub_path": "machine/fdm_machine_common.json"
+        },
+        {
+            "name": "fdm_pratham_regular_common",
+            "sub_path": "machine/fdm_pratham_regular_common.json"
+        },
+        {
+            "name": "Pratham Mini Nozzle 0.3",
+            "sub_path": "machine/Pratham Mini Nozzle 0.3.json"
+        },
+        {
+            "name": "Pratham Mini Nozzle 0.4",
+            "sub_path": "machine/Pratham Mini Nozzle 0.4.json"
+        },
+        {
+            "name": "Pratham Desktop Nozzle 0.3",
+            "sub_path": "machine/Pratham Desktop Nozzle 0.3.json"
+        },
+        {
+            "name": "Pratham Desktop Nozzle 0.4",
+            "sub_path": "machine/Pratham Desktop Nozzle 0.4.json"
+        },
+        {
+            "name": "Pratham 3.0 Nozzle 0.4",
+            "sub_path": "machine/Pratham 3.0 Nozzle 0.4.json"
+        },
+        {
+            "name": "Pratham 3.0 Nozzle 0.5",
+            "sub_path": "machine/Pratham 3.0 Nozzle 0.5.json"
+        },
+        {
+            "name": "Pratham 3.0 Nozzle 0.6",
+            "sub_path": "machine/Pratham 3.0 Nozzle 0.6.json"
+        },
+        {
+            "name": "Pratham 3.0 Nozzle 0.8",
+            "sub_path": "machine/Pratham 3.0 Nozzle 0.8.json"
+        },
+        {
+            "name": "Pratham 5.0 Nozzle 0.4",
+            "sub_path": "machine/Pratham 5.0 Nozzle 0.4.json"
+        },
+        {
+            "name": "Pratham 5.0 Nozzle 0.5",
+            "sub_path": "machine/Pratham 5.0 Nozzle 0.5.json"
+        },
+        {
+            "name": "Pratham 5.0 Nozzle 0.6",
+            "sub_path": "machine/Pratham 5.0 Nozzle 0.6.json"
+        },
+        {
+            "name": "Pratham 5.0 Nozzle 0.8",
+            "sub_path": "machine/Pratham 5.0 Nozzle 0.8.json"
+        },
+        {
+            "name": "Pratham 6.0 Nozzle 0.4",
+            "sub_path": "machine/Pratham 6.0 Nozzle 0.4.json"
+        },
+        {
+            "name": "Pratham 6.0 Nozzle 0.5",
+            "sub_path": "machine/Pratham 6.0 Nozzle 0.5.json"
+        },
+        {
+            "name": "Pratham 6.0 Nozzle 0.6",
+            "sub_path": "machine/Pratham 6.0 Nozzle 0.6.json"
+        },
+        {
+            "name": "Pratham 6.0 Nozzle 0.8",
+            "sub_path": "machine/Pratham 6.0 Nozzle 0.8.json"
+        },
+        {
+            "name": "Pratham X Nozzle 0.4",
+            "sub_path": "machine/Pratham X Nozzle 0.4.json"
+        },
+        {
+            "name": "Pratham X Nozzle 0.5",
+            "sub_path": "machine/Pratham X Nozzle 0.5.json"
+        },
+        {
+            "name": "Pratham X Nozzle 0.6",
+            "sub_path": "machine/Pratham X Nozzle 0.6.json"
+        },
+        {
+            "name": "Pratham X Nozzle 0.8",
+            "sub_path": "machine/Pratham X Nozzle 0.8.json"
+        },
+        {
+            "name": "Pratham X Nozzle 1.0",
+            "sub_path": "machine/Pratham X Nozzle 1.0.json"
+        },
+        {
+            "name": "Pratham XL Nozzle 0.4",
+            "sub_path": "machine/Pratham XL Nozzle 0.4.json"
+        },
+        {
+            "name": "Pratham XL Nozzle 0.5",
+            "sub_path": "machine/Pratham XL Nozzle 0.5.json"
+        },
+        {
+            "name": "Pratham XL Nozzle 0.6",
+            "sub_path": "machine/Pratham XL Nozzle 0.6.json"
+        },
+        {
+            "name": "Pratham XL Nozzle 0.8",
+            "sub_path": "machine/Pratham XL Nozzle 0.8.json"
+        },
+        {
+            "name": "Pratham XL Nozzle 1.0",
+            "sub_path": "machine/Pratham XL Nozzle 1.0.json"
+        },
+        {
+            "name": "fdm_klipper_common",
+            "sub_path": "machine/fdm_klipper_common.json"
+        },
+        {
+            "name": "fdm_rapid_common",
+            "sub_path": "machine/fdm_rapid_common.json"
+        },
+        {
+            "name": "Pratham Rapid 3.0 Nozzle 0.4",
+            "sub_path": "machine/Pratham Rapid 3.0 Nozzle 0.4.json"
+        },
+        {
+            "name": "Pratham Rapid 3.0 Nozzle 0.5",
+            "sub_path": "machine/Pratham Rapid 3.0 Nozzle 0.5.json"
+        },
+        {
+            "name": "fdm_super_common",
+            "sub_path": "machine/fdm_super_common.json"
+        }
+    ]
+}

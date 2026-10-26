@@ -1,0 +1,47 @@
+{
+    "type": "process",
+    "setting_id": "M3DTPU24REG",
+    "inherits": "fdm_process_tpu_common",
+    "name": "TPU 0.24 @Regular",
+    "from": "system",
+    "instantiation": "true",
+    "compatible_printers": [
+        "Pratham 3.0 Nozzle 0.4",
+        "Pratham 5.0 Nozzle 0.4",
+        "Pratham 6.0 Nozzle 0.4",
+        "Pratham X Nozzle 0.4",
+        "Pratham XL Nozzle 0.4",
+        "Pratham Desktop Nozzle 0.4",
+        "Pratham Mini Nozzle 0.4",
+        "Pratham 3.0 Nozzle 0.5",
+        "Pratham 5.0 Nozzle 0.5",
+        "Pratham 6.0 Nozzle 0.5",
+        "Pratham X Nozzle 0.5",
+        "Pratham XL Nozzle 0.5",
+        "Pratham 3.0 Nozzle 0.6",
+        "Pratham 5.0 Nozzle 0.6",
+        "Pratham 6.0 Nozzle 0.6",
+        "Pratham X Nozzle 0.6",
+        "Pratham XL Nozzle 0.6",
+        "Pratham 3.0 Nozzle 0.8",
+        "Pratham 5.0 Nozzle 0.8",
+        "Pratham 6.0 Nozzle 0.8",
+        "Pratham X Nozzle 0.8",
+        "Pratham XL Nozzle 0.8"
+    ],
+    
+    "initial_layer_print_height": "0.2",
+    "layer_height": "0.24",
+    "bottom_shell_layers": "5",
+    "top_shell_layers": "5",
+
+    "sparse_infill_density": "15%",
+    "sparse_infill_pattern": "grid",
+    
+    "support_top_z_distance": "0.22",
+    "support_bottom_z_distance": "0.24",
+
+    "max_travel_detour_distance": "150",
+
+    "wall_loops": "2"
+}

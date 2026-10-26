@@ -109,7 +109,7 @@ static wxString update_custom_filaments()
 }
 
 GuideFrame::GuideFrame(GUI_App *pGUI, long style)
-    : DPIDialog((wxWindow *) (pGUI->mainframe), wxID_ANY, "OrcaSlicer", wxDefaultPosition, wxDefaultSize, style),
+    : DPIDialog((wxWindow *) (pGUI->mainframe), wxID_ANY, "Make3D Slicer", wxDefaultPosition, wxDefaultSize, style),
 	m_appconfig_new()
 {
     SetBackgroundColour(*wxWHITE);
@@ -182,7 +182,7 @@ GuideFrame::GuideFrame(GUI_App *pGUI, long style)
     // Bind(wxEVT_CLOSE_WINDOW, &GuideFrame::OnClose, this);
 
     // UI
-    SetStartPage(BBL_REGION);
+    SetStartPage(BBL_WELCOME);
 
     BOOST_LOG_TRIVIAL(info) << __FUNCTION__ << boost::format(",  finished");
     wxGetApp().UpdateDlgDarkUI(this);
@@ -225,7 +225,7 @@ wxString GuideFrame::SetStartPage(GuidePage startpage, bool load)
         TargetUrl = from_u8((boost::filesystem::path(resources_dir()) / "web/guide/0/index.html?target=1").make_preferred().string());
     } else if (startpage == BBL_REGION) {
         SetTitle(_L("Setup Wizard"));
-        TargetUrl = from_u8((boost::filesystem::path(resources_dir()) / "web/guide/0/index.html?target=11").make_preferred().string());
+        TargetUrl = from_u8((boost::filesystem::path(resources_dir()) / "web/guide/0/index.html?target=21").make_preferred().string());
     } else if (startpage == BBL_MODELS) {
         SetTitle(_L("Setup Wizard"));
         TargetUrl = from_u8((boost::filesystem::path(resources_dir()) / "web/guide/0/index.html?target=21").make_preferred().string());
@@ -526,6 +526,7 @@ void GuideFrame::OnScriptMessage(wxWebViewEvent &evt)
 
             this->EndModal(wxID_OK);
 
+            InstallNetplugin = false; // Hide and suppress proprietary plugin window in setup wizard
             if (InstallNetplugin)
                 GUI::wxGetApp().CallAfter([] { GUI::wxGetApp().ShowDownNetPluginDlg(); });
         }
@@ -1452,6 +1453,12 @@ int GuideFrame::LoadProfileFamily(std::string strVendor, std::string strFilePath
                     int nRet = GetFilamentInfo(vendor_dir.string(),tFilaList, sub_file, sV, sT);
                     if (nRet != 0) {
                         BOOST_LOG_TRIVIAL(info) << __FUNCTION__ << "Load Filament:" << s1 << ",GetFilamentInfo Failed, Vendor:" << sV << ",Type:"<< sT;
+                        continue;
+                    }
+
+                    // Filter: only keep Make3D filaments in setup wizard
+                    std::string lowerV = boost::algorithm::to_lower_copy(sV);
+                    if (lowerV.find("make3d") == std::string::npos && lowerV.find("make 3d") == std::string::npos) {
                         continue;
                     }
 

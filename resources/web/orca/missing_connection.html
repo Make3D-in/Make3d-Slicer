@@ -6,17 +6,80 @@
 <title>Printer Connection Required</title>
 <link rel="stylesheet" type="text/css" href="css/home.css" />
 <link rel="stylesheet" type="text/css" href="css/dark.css" />
-<script type="text/javascript" src="../data/text.js"></script>	
+<script type="text/javascript" src="../data/text.js"></script>
 <script type="text/javascript" src="../homepage/js/jquery-3.6.0.min.js"></script>
 <script type="text/javascript" src="../homepage/js/json2.js"></script>
 <script type="text/javascript" src="../homepage/js/globalapi.js"></script>
 <script type="text/javascript" src="../homepage/js/home.js"></script>
+<style>
+  body {
+    margin: 0;
+    padding: 0;
+    background: #0f172a;
+    color: #f8fafc;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  }
+  .container {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 30px 20px;
+    text-align: center;
+  }
+  h1 {
+    font-size: 24px;
+    font-weight: 700;
+    margin-bottom: 8px;
+    color: #38bdf8;
+  }
+  p {
+    font-size: 15px;
+    color: #94a3b8;
+    margin-bottom: 24px;
+  }
+  .video-wrap {
+    max-width: 860px;
+    margin: 0 auto;
+    border-radius: 12px;
+    overflow: hidden;
+    background: #000;
+    box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+  .device-video {
+    width: 100%;
+    height: auto;
+    max-height: 520px;
+    display: block;
+    margin: 0 auto;
+  }
+</style>
 </head>
 <body onLoad="OnInit()">
     <div class="container">
         <h1 class="trans">Printer Connection</h1>
-        <p class="trans">Please set up your printer connection to view the device.</p>
-        <img src="setup_connection.gif" alt="Printer connection setup demonstration" style="max-width: 100%; height: auto; display: block;"/>
+        <p class="trans">Please set up your printer connection to view and control your device.</p>
+        <div class="video-wrap">
+            <video id="DeviceVideo" class="device-video" autoplay loop muted playsinline controls preload="auto">
+                <source src="devices.mp4" type="video/mp4">
+                <source src="Devices.mp4" type="video/mp4">
+                <img src="setup_connection.gif" alt="Printer connection setup demonstration" style="max-width:100%;height:auto;display:block;">
+            </video>
+        </div>
     </div>
+    <script>
+      // Ensure video plays reliably even if autoplay restrictions apply
+      window.addEventListener('DOMContentLoaded', function() {
+        var v = document.getElementById('DeviceVideo');
+        if (v) {
+          v.muted = true;
+          var playPromise = v.play();
+          if (playPromise !== undefined) {
+            playPromise.catch(function() {
+              // Auto-play was prevented; controls are enabled for user interaction
+            });
+          }
+        }
+      });
+    </script>
 </body>
 </html>

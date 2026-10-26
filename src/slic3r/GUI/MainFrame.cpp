@@ -2348,9 +2348,9 @@ void MainFrame::update_side_button_style()
     m_slice_btn->SetExtraSize(wxSize(FromDIP(38), FromDIP(10)));
     m_slice_btn->SetBottomColour(wxColour(0x3B4446));*/
     StateColor m_btn_bg_enable = StateColor(
-        std::pair<wxColour, int>(wxColour(0, 137, 123), StateColor::Pressed),
+        std::pair<wxColour, int>(wxColour(0, 89, 179), StateColor::Pressed),
         std::pair<wxColour, int>(wxColour(48, 221, 112), StateColor::Hovered),
-        std::pair<wxColour, int>(wxColour(0, 150, 136), StateColor::Normal)
+        std::pair<wxColour, int>(wxColour(0, 122, 204), StateColor::Normal)
     );
 
     // m_publish_btn->SetMinSize(wxSize(FromDIP(125), FromDIP(24)));
@@ -2559,6 +2559,11 @@ static const wxString sep = "\t";
 static wxMenu* generate_help_menu()
 {
     wxMenu* helpMenu = new wxMenu();
+
+    append_menu_item(helpMenu, wxID_ANY, _L("Make3D Cloud Account"), _L("Sign in to sync your printer and filament profiles"), [](wxCommandEvent &) {
+        wxGetApp().request_login(true, ORCA_CLOUD_PROVIDER);
+    });
+    helpMenu->AppendSeparator();
 
     // shortcut key
     append_menu_item(helpMenu, wxID_ANY, _L("Keyboard Shortcuts") + sep + "&?", _L("Show the list of keyboard shortcuts"),
@@ -3588,7 +3593,7 @@ void MainFrame::set_max_recent_count(int max)
         }
         wxGetApp().app_config->set_recent_projects(recent_projects);
         wxGetApp().app_config->save();
-        m_webview->SendRecentList(-1);
+        m_webview->SendRecentList(INT_MAX); // Make3D: always send all thumbnails
     }
 }
 
@@ -4102,12 +4107,21 @@ void MainFrame::add_to_recent_projects(const wxString& filename)
             recent_projects.push_back(into_u8(m_recent_projects.GetHistoryFile(i)));
         }
         wxGetApp().app_config->set_recent_projects(recent_projects);
-        m_webview->SendRecentList(0);
+        // Make3D: Load all thumbnails (on-demand) then send complete list with images
+        m_recent_projects.LoadThumbnails();
+        m_webview->SendRecentList(INT_MAX);
     }
 }
 
 std::wstring MainFrame::FileHistory::GetThumbnailUrl(int index) const
 {
+    if (index < 0 || (size_t)index >= m_thumbnails.size()) return L"";
+    if (m_thumbnails[index].empty()) {
+        auto thumb = bbs_3mf_get_thumbnail(into_u8(GetHistoryFile(index)).c_str());
+        if (!thumb.empty()) {
+            const_cast<MainFrame::FileHistory*>(this)->m_thumbnails[index] = thumb;
+        }
+    }
     if (m_thumbnails[index].empty()) return L"";
     std::wstringstream wss;
     wss << L"data:image/png;base64,";
@@ -4174,7 +4188,10 @@ void MainFrame::get_recent_projects(boost::property_tree::wptree &tree, int imag
             item.put(L"time", time);
             if (i <= images) {
                 auto thumbnail = m_recent_projects.GetThumbnailUrl(i);
-                if (!thumbnail.empty()) item.put(L"image", thumbnail);
+                if (!thumbnail.empty()) {
+                    item.put(L"image", thumbnail);
+                    item.put(L"cover", thumbnail);
+                }
             }
         } else {
             item.put(L"time", _L("File is missing"));
@@ -4207,7 +4224,7 @@ void MainFrame::open_recent_project(size_t file_id, wxString const & filename)
                 recent_projects.push_back(into_u8(m_recent_projects.GetHistoryFile(i)));
             }
             wxGetApp().app_config->set_recent_projects(recent_projects);
-            m_webview->SendRecentList(-1);
+            m_webview->SendRecentList(INT_MAX); // Make3D: always include all thumbnails
         }
     }
 }
@@ -4230,7 +4247,7 @@ void MainFrame::remove_recent_project(size_t file_id, wxString const &filename)
         recent_projects.push_back(into_u8(m_recent_projects.GetHistoryFile(i)));
     }
     wxGetApp().app_config->set_recent_projects(recent_projects);
-    m_webview->SendRecentList(-1);
+    m_webview->SendRecentList(INT_MAX); // Make3D: always include all thumbnails
 }
 
 void MainFrame::load_url(wxString url)

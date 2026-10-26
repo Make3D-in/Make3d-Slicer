@@ -317,7 +317,7 @@ void Tab::create_preset_tab()
     //search input
     m_search_item = new StaticBox(m_top_panel);
     StateColor box_colour(std::pair<wxColour, int>(*wxWHITE, StateColor::Normal));
-    StateColor box_border_colour(std::pair<wxColour, int>(wxColour("#009688"), StateColor::Normal)); // ORCA match border color with other input/combo boxes
+    StateColor box_border_colour(std::pair<wxColour, int>(wxColour("#007acc"), StateColor::Normal)); // ORCA match border color with other input/combo boxes
 
     m_search_item->SetBackgroundColor(box_colour);
     m_search_item->SetBorderColor(box_border_colour);
@@ -2099,6 +2099,49 @@ void Tab::on_value_change(const std::string& opt_key, const boost::any& value)
                 new_conf.set_key_value("make_overhang_printable", new ConfigOptionBool(false));
                 m_config_manipulation.apply(m_config, &new_conf);
                 wxGetApp().plater()->update();
+            }
+        }
+    }
+
+    std::string opt_key_infill_base = opt_key.substr(0, opt_key.find('#'));
+    if (opt_key_infill_base == "sparse_infill_density" || opt_key_infill_base == "sparse_infill_pattern") {
+        static bool s_infill_dialog_showing = false;
+        if (!s_infill_dialog_showing && m_config && m_config->has("sparse_infill_density") && m_config->has("sparse_infill_pattern")) {
+            auto opt_density = m_config->option<ConfigOptionPercent>("sparse_infill_density");
+            auto opt_pattern = m_config->option<ConfigOptionEnum<InfillPattern>>("sparse_infill_pattern");
+            if (opt_density && opt_pattern) {
+                double density = opt_density->value;
+                InfillPattern pattern = opt_pattern->value;
+                if (density >= 99.99 && pattern == ipGrid) {
+                    s_infill_dialog_showing = true;
+                    wxString msg_text = _L("Grid infill pattern doesn't support 100% density.\n"
+                                           "Switch to rectilinear pattern?\n"
+                                           "Yes - switch to rectilinear pattern\n"
+                                           "No - reset density to default non 100% value");
+                    wxString title = wxTheApp->GetAppDisplayName() + " " + _L("info");
+                    MessageDialog dialog(wxGetApp().plater(), msg_text, title, wxICON_WARNING | wxYES | wxNO);
+                    dialog.SetButtonLabel(wxID_YES, _L("Yes"));
+                    dialog.SetButtonLabel(wxID_NO, _L("No"));
+                    int res = dialog.ShowModal();
+                    DynamicPrintConfig new_conf = *m_config;
+                    if (res == wxID_YES) {
+                        new_conf.set_key_value("sparse_infill_pattern", new ConfigOptionEnum<InfillPattern>(ipRectilinear));
+                    } else {
+                        double default_density = 15.0;
+                        if (m_presets) {
+                            const Preset* parent_preset = m_presets->get_selected_preset_parent();
+                            if (parent_preset && parent_preset->config.has("sparse_infill_density")) {
+                                auto p_opt = parent_preset->config.option<ConfigOptionPercent>("sparse_infill_density");
+                                if (p_opt && p_opt->value < 99.99 && p_opt->value > 0.0)
+                                    default_density = p_opt->value;
+                            }
+                        }
+                        new_conf.set_key_value("sparse_infill_density", new ConfigOptionPercent(default_density));
+                    }
+                    m_config_manipulation.apply(m_config, &new_conf);
+                    wxGetApp().plater()->update();
+                    s_infill_dialog_showing = false;
+                }
             }
         }
     }
@@ -5207,6 +5250,8 @@ void TabPrinter::build_fff()
         option.opt.height     = gcode_field_height; // 150;
         optgroup->append_single_option_line(option, "printer_machine_gcode#clumping-detection-g-code");
 
+        // Make3D: Hide Change filament G-code section
+#if 0
         optgroup = page->new_optgroup(L("Change filament G-code"), L"param_gcode", 0);
         optgroup->m_on_change = [this, &optgroup_title = optgroup->title](const t_config_option_key& opt_key, const boost::any& value) {
             validate_custom_gcode_cb(this, optgroup_title, opt_key, value);
@@ -5217,6 +5262,7 @@ void TabPrinter::build_fff()
         option.opt.is_code = true;
         option.opt.height = gcode_field_height;//150;
         optgroup->append_single_option_line(option, "printer_machine_gcode#change-filament-g-code");
+#endif
 
         optgroup = page->new_optgroup(L("Change extrusion role G-code"), L"param_gcode", 0);
         optgroup->m_on_change = [this, &optgroup_title = optgroup->title](const t_config_option_key &opt_key, const boost::any &value) {
@@ -6498,7 +6544,7 @@ void Tab::load_current_preset()
             on_presets_changed();
             if (printer_technology == ptFFF) {
                 static_cast<TabPrinter*>(this)->m_initial_extruders_count = static_cast<const ConfigOptionFloats*>(m_presets->get_selected_preset().config.option("nozzle_diameter"))->values.size(); //static_cast<TabPrinter*>(this)->m_extruders_count;
-                const Preset* parent_preset = m_presets->get_selected_preset_parent();
+                const const Preset* parent_preset = m_presets->get_selected_preset_parent();
                 static_cast<TabPrinter*>(this)->m_sys_extruders_count = parent_preset == nullptr ? 0 :
                     static_cast<const ConfigOptionFloats*>(parent_preset->config.option("nozzle_diameter"))->values.size();
             }
@@ -6545,6 +6591,9 @@ void Tab::rebuild_page_tree()
     for (auto p : m_pages)
     {
         if (!p->get_show())
+            continue;
+        // Make3D: Hide Multimaterial tab from Process, Filament, and Printer settings
+        if (p->title() == L("Multimaterial"))
             continue;
         if (m_tabctrl->GetCount() <= curr_item) {
             m_tabctrl->AppendItem(translate_category(p->title(), m_type), p->iconID());
@@ -7443,6 +7492,13 @@ void Tab::save_preset(std::string name /*= ""*/, bool detach, bool save_to_proje
 
     // update preset comboboxes in DiffPresetDlg
     wxGetApp().mainframe->diff_dialog.update_presets(m_type);
+
+    // Make3D Auto-Sync: trigger cloud upload in homepage WebView after preset save
+    // home.js TriggerAutoUpload() will read token from localStorage, call get_user_presets_json, then upload
+    if (wxGetApp().mainframe && wxGetApp().mainframe->m_webview) {
+        wxGetApp().mainframe->m_webview->RunScript(
+            "if(typeof TriggerAutoUpload==='function'){TriggerAutoUpload();}");
+    }
 }
 
 // Called for a currently selected preset.
@@ -8450,6 +8506,10 @@ void Page::update_visibility(ConfigOptionMode mode, bool update_contolls_visibil
     }
 
     m_show = ret_val;
+    // Make3D: Hide Multimaterial tab from Process, Filament, and Printer settings
+    if (m_title == L("Multimaterial")) {
+        m_show = false;
+    }
 #ifdef __WXMSW__
     if (!m_show) return;
     // BBS: fix field control position

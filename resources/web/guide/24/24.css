@@ -3,3 +3,48 @@
 #CreateBtn {
 	margin: 0 auto 0 0;
 }
+
+/* ULTRA-CRISP MODERN CHECKBOX STYLING */
+input[type="checkbox"] {
+	-webkit-appearance: none !important;
+	appearance: none !important;
+	width: 16px !important;
+	height: 16px !important;
+	min-width: 16px !important;
+	min-height: 16px !important;
+	border: 1.5px solid #a6a6a6 !important;
+	border-radius: 3px !important;
+	background-color: #ffffff !important;
+	cursor: pointer !important;
+	display: inline-flex !important;
+	align-items: center !important;
+	justify-content: center !important;
+	vertical-align: middle !important;
+	margin: 0 6px 0 0 !important;
+	padding: 0 !important;
+	outline: none !important;
+	box-sizing: border-box !important;
+	transition: all 0.15s ease-in-out !important;
+}
+
+input[type="checkbox"]:hover {
+	border-color: #007acc !important;
+}
+
+input[type="checkbox"]:checked {
+	background-color: #007acc !important;
+	border-color: #007acc !important;
+	background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="white"><path d="M13.485 3.515a1 1 0 0 1 0 1.414l-7.071 7.071a1 1 0 0 1-1.414 0L2.172 9.172a1 1 0 1 1 1.414-1.414L5.7 9.879l6.371-6.364a1 1 0 0 1 1.414 0z"/></svg>') !important;
+	background-repeat: no-repeat !important;
+	background-position: center !important;
+	background-size: 11px 11px !important;
+}
+
+input[type="checkbox"]:indeterminate {
+	background-color: #007acc !important;
+	border-color: #007acc !important;
+	background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="white"><rect x="3" y="6.5" width="10" height="3" rx="1.5"/></svg>') !important;
+	background-repeat: no-repeat !important;
+	background-position: center !important;
+	background-size: 10px 10px !important;
+}

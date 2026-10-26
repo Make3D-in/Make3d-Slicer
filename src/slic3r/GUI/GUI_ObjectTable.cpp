@@ -2870,11 +2870,11 @@ int ObjectTablePanel::init_filaments_and_colors()
             }
             else
             {
-                m_filaments_colors[i] = *wxGREEN;
+                m_filaments_colors[i] = wxColour(0, 144, 255); // Make3D Theme Blue
             }
         }
         else {
-            m_filaments_colors[i] = *wxGREEN;
+            m_filaments_colors[i] = wxColour(0, 144, 255); // Make3D Theme Blue
         }
 
         //parse the filaments

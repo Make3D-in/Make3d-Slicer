@@ -1135,6 +1135,7 @@ void PrintConfigDef::init_fff_params()
     def->full_label = L("Bed temperature");
     def->min = 0;
     def->max = 120;
+    def->mode = comAdvanced;
     def->set_default_value(new ConfigOptionInts{35});
 
     def = this->add("cool_plate_temp", coInts);
@@ -1144,6 +1145,7 @@ void PrintConfigDef::init_fff_params()
     def->full_label = L("Bed temperature");
     def->min = 0;
     def->max = 300;
+    def->mode = comAdvanced;
     def->set_default_value(new ConfigOptionInts{ 35 });
 
     def = this->add("textured_cool_plate_temp", coInts);
@@ -1153,6 +1155,7 @@ void PrintConfigDef::init_fff_params()
     def->full_label = L("Bed temperature");
     def->min = 0;
     def->max = 300;
+    def->mode = comAdvanced;
     def->set_default_value(new ConfigOptionInts{ 40 });
 
     def = this->add("eng_plate_temp", coInts);
@@ -1162,6 +1165,7 @@ void PrintConfigDef::init_fff_params()
     def->full_label = L("Bed temperature");
     def->min = 0;
     def->max = 300;
+    def->mode = comAdvanced;
     def->set_default_value(new ConfigOptionInts{ 45 });
 
     def = this->add("hot_plate_temp", coInts);
@@ -1189,6 +1193,7 @@ void PrintConfigDef::init_fff_params()
     def->sidetext = L(u8"\u2103" /* °C */);	// degrees Celsius, CIS languages need translation
     def->min = 0;
     def->max = 120;
+    def->mode = comAdvanced;
     def->set_default_value(new ConfigOptionInts{ 35 });
 
     def = this->add("cool_plate_temp_initial_layer", coInts);
@@ -1198,6 +1203,7 @@ void PrintConfigDef::init_fff_params()
     def->sidetext = L(u8"\u2103" /* °C */);	// degrees Celsius, CIS languages need translation
     def->min = 0;
     def->max = 120;
+    def->mode = comAdvanced;
     def->set_default_value(new ConfigOptionInts{ 35 });
 
     def = this->add("textured_cool_plate_temp_initial_layer", coInts);
@@ -1207,6 +1213,7 @@ void PrintConfigDef::init_fff_params()
     def->sidetext = L(u8"\u2103" /* °C */);	// degrees Celsius, CIS languages need translation
     def->min = 0;
     def->max = 120;
+    def->mode = comAdvanced;
     def->set_default_value(new ConfigOptionInts{ 40 });
 
     def = this->add("eng_plate_temp_initial_layer", coInts);
@@ -1216,6 +1223,7 @@ void PrintConfigDef::init_fff_params()
     def->sidetext = L(u8"\u2103" /* °C */);	// degrees Celsius, CIS languages need translation
     def->min = 0;
     def->max = 300;
+    def->mode = comAdvanced;
     def->set_default_value(new ConfigOptionInts{ 45 });
 
     def = this->add("hot_plate_temp_initial_layer", coInts);
@@ -1329,6 +1337,7 @@ void PrintConfigDef::init_fff_params()
     def->full_label = L("Bottom shell thickness");
     def->sidetext = L("mm");	// millimeters, CIS languages need translation
     def->min = 0;
+    def->mode = comAdvanced;
     def->set_default_value(new ConfigOptionFloat(0.));
 
     def = this->add("gap_fill_target", coEnum);
@@ -2315,6 +2324,7 @@ void PrintConfigDef::init_fff_params()
     def->sidetext = ("%");
     def->min = 0;
     def->max = 100;
+    def->mode = comAdvanced;
     def->set_default_value(new ConfigOptionPercent(100));
 
     def = this->add("top_surface_expansion", coFloat);
@@ -2376,6 +2386,7 @@ void PrintConfigDef::init_fff_params()
     def->sidetext = ("%");
     def->min      = 10;
     def->max      = 100;
+    def->mode = comAdvanced;
     def->set_default_value(new ConfigOptionPercent(100));
 
     auto def_top_fill_order = def = this->add("top_surface_fill_order", coEnum);
@@ -2788,7 +2799,7 @@ void PrintConfigDef::init_fff_params()
     def->tooltip = L("Only used as a visual help on UI.");
     def->gui_type = ConfigOptionDef::GUIType::color;
     def->mode = comAdvanced;
-    def->set_default_value(new ConfigOptionStrings{ "#F2754E" });
+    def->set_default_value(new ConfigOptionStrings{ "#0090FF" }); // Make3D Theme Blue
 
     // PS
     def = this->add("filament_notes", coStrings);
@@ -3344,7 +3355,7 @@ void PrintConfigDef::init_fff_params()
     def->sidetext = u8"°";	// degrees, don't need translation
     def->min = -1;
     def->max = 360;
-    def->mode = comSimple;
+    def->mode = comAdvanced;
     def->set_default_value(new ConfigOptionFloat(-1));
 
     def = this->add("bottom_layer_direction", coFloat);
@@ -3354,7 +3365,7 @@ void PrintConfigDef::init_fff_params()
     def->sidetext = u8"°";	// degrees, don't need translation
     def->min = -1;
     def->max = 360;
-    def->mode = comSimple;
+    def->mode = comAdvanced;
     def->set_default_value(new ConfigOptionFloat(-1));
 
     def = this->add("sparse_infill_density", coPercent);
@@ -3854,7 +3865,7 @@ void PrintConfigDef::init_fff_params()
     def->enum_labels.push_back(L("Contour and hole"));
     def->enum_labels.push_back(L("All walls"));
     def->enum_labels.push_back(L("Disabled"));
-    def->mode = comSimple;
+    def->mode = comAdvanced;
     def->set_default_value(new ConfigOptionEnum<FuzzySkinType>(FuzzySkinType::Disabled_fuzzy));
 
     def = this->add("fuzzy_skin_thickness", coFloat);
@@ -3864,7 +3875,7 @@ void PrintConfigDef::init_fff_params()
     def->sidetext = L("mm");	// millimeters, CIS languages need translation
     def->min = 0;
     def->max = 2;
-    def->mode = comSimple;
+    def->mode = comAdvanced;
     def->set_default_value(new ConfigOptionFloat(0.2));
 
     def = this->add("fuzzy_skin_point_distance", coFloat);
@@ -3874,14 +3885,14 @@ void PrintConfigDef::init_fff_params()
     def->sidetext = L("mm");	// millimeters, CIS languages need translation
     def->min = 0.01f; // point distance cannot be 0! Otherwise we get infinite loop + OOM due to infinite line division.
     def->max = 5.f;
-    def->mode = comSimple;
+    def->mode = comAdvanced;
     def->set_default_value(new ConfigOptionFloat(0.3f));
 
     def = this->add("fuzzy_skin_first_layer", coBool);
     def->label = L("Apply fuzzy skin to first layer");
     def->category = L("Others");
     def->tooltip = L("Whether to apply fuzzy skin on the first layer.");
-    def->mode = comSimple;
+    def->mode = comAdvanced;
     def->set_default_value(new ConfigOptionBool(0));
 
     def = this->add("fuzzy_skin_mode", coEnum);
@@ -3904,7 +3915,7 @@ void PrintConfigDef::init_fff_params()
     def->enum_labels.push_back(L("Displacement"));
     def->enum_labels.push_back(L("Extrusion"));
     def->enum_labels.push_back(L("Combined"));
-    def->mode = comSimple;
+    def->mode = comAdvanced;
     def->set_default_value(new ConfigOptionEnum<FuzzySkinMode>(FuzzySkinMode::Displacement));
 
     def = this->add("fuzzy_skin_noise_type", coEnum);
@@ -3930,7 +3941,7 @@ void PrintConfigDef::init_fff_params()
     def->enum_labels.push_back(L("Ridged Multifractal"));
     def->enum_labels.push_back(L("Voronoi"));
     def->enum_labels.push_back(L("Ripple"));
-    def->mode = comSimple;
+    def->mode = comAdvanced;
     def->set_default_value(new ConfigOptionEnum<NoiseType>(NoiseType::Classic));
 
     def = this->add("fuzzy_skin_scale", coFloat);
@@ -4273,7 +4284,7 @@ void PrintConfigDef::init_fff_params()
     def          = this->add("pellet_modded_printer", coBool);
     def->label   = L("Pellet Modded Printer");
     def->tooltip = L("Enable this option if your printer uses pellets instead of filaments.");
-    def->mode    = comSimple;
+    def->mode = comAdvanced;
     def->set_default_value(new ConfigOptionBool(false));
 
     def = this->add("support_multi_bed_types", coBool);
@@ -4967,7 +4978,7 @@ void PrintConfigDef::init_fff_params()
             (void)L("Maximum E speed");
             def->sidetext = L("mm/s");	// millimeters per second, CIS languages need translation
             def->min = 0;
-            def->mode = comSimple;
+            def->mode = comAdvanced;
             def->set_default_value(new ConfigOptionFloats(axis.max_feedrate));
             // Add the machine acceleration limits for XYZE axes (M201)
             def = this->add("machine_max_acceleration_" + axis.name, coFloats);
@@ -4985,7 +4996,7 @@ void PrintConfigDef::init_fff_params()
             (void)L("Maximum acceleration of the E axis");
             def->sidetext = L(u8"mm/s²");	// millimeters per second per second, CIS languages need translation
             def->min = 0;
-            def->mode = comSimple;
+            def->mode = comAdvanced;
             def->set_default_value(new ConfigOptionFloats(axis.max_acceleration));
             // Add the machine jerk limits for XYZE axes (M205)
             def = this->add("machine_max_jerk_" + axis.name, coFloats);
@@ -5003,7 +5014,7 @@ void PrintConfigDef::init_fff_params()
             (void)L("Maximum jerk of the E axis");
             def->sidetext = L("mm/s");	// millimeters per second, CIS languages need translation
             def->min = 0;
-            def->mode = comSimple;
+            def->mode = comAdvanced;
             def->set_default_value(new ConfigOptionFloats(axis.max_jerk));
         }
     }
@@ -5081,7 +5092,7 @@ void PrintConfigDef::init_fff_params()
     def->sidetext = L(u8"mm/s²");	// millimeters per second per second, CIS languages need translation
     def->min = 0;
     def->readonly = false;
-    def->mode = comSimple;
+    def->mode = comAdvanced;
     def->set_default_value(new ConfigOptionFloats{ 1500., 1250. });
 
 
@@ -5093,7 +5104,7 @@ void PrintConfigDef::init_fff_params()
     def->sidetext = L(u8"mm/s²");	// millimeters per second per second, CIS languages need translation
     def->min = 0;
     def->readonly = false;
-    def->mode = comSimple;
+    def->mode = comAdvanced;
     def->set_default_value(new ConfigOptionFloats{ 1500., 1250. });
 
     // M204 T... [mm/sec^2]
@@ -6763,14 +6774,14 @@ void PrintConfigDef::init_fff_params()
     def->category = L("Support");
     def->tooltip = L("Filament to print support base and raft.\n\"Default\" means no specific filament for support and current filament is used.");
     def->min = 0;
-    def->mode = comSimple;
+    def->mode = comAdvanced;
     def->set_default_value(new ConfigOptionInt(0));
 
     def = this->add("support_interface_not_for_body",coBool);
     def->label    = L("Avoid interface filament for base");
     def->category = L("Support");
     def->tooltip = L("Avoid using support interface filament to print support base if possible.");
-    def->mode = comSimple;
+    def->mode = comAdvanced;
     def->set_default_value(new ConfigOptionBool(true));
 
     def = this->add("support_line_width", coFloatOrPercent);
@@ -6799,7 +6810,7 @@ void PrintConfigDef::init_fff_params()
     def->tooltip = L("Filament to print support interface.\n\"Default\" means no specific filament for support interface and current filament is used.");
     def->min = 0;
     // BBS
-    def->mode = comSimple;
+    def->mode = comAdvanced;
     def->set_default_value(new ConfigOptionInt(0));
 
     auto support_interface_top_layers = def = this->add("support_interface_top_layers", coInt);
@@ -7181,7 +7192,7 @@ void PrintConfigDef::init_fff_params()
                      "This option activates the emitting of an M191 command before the \"machine_start_gcode\"\n which sets the chamber temperature and waits until it is reached. "
                      "In addition, it emits an M141 command at the end of the print to turn off the chamber heater, if present.\n\n"
                      "This option relies on the firmware supporting the M191 and M141 commands either via macros or natively and is usually used when an active chamber heater is installed.");
-    def->mode = comSimple;
+    def->mode = comAdvanced;
     def->set_default_value(new ConfigOptionBools{false});
 
     def = this->add("chamber_temperature", coInts);
@@ -7203,6 +7214,7 @@ void PrintConfigDef::init_fff_params()
     def->full_label = L("Chamber temperature");
     def->min = 0;
     def->max = max_temp;
+    def->mode = comAdvanced;
     def->set_default_value(new ConfigOptionInts{0});
 
     def = this->add("chamber_minimal_temperature", coInts);
@@ -7218,6 +7230,7 @@ void PrintConfigDef::init_fff_params()
     def->full_label = L("Chamber minimal temperature");
     def->min = 0;
     def->max = max_temp;
+    def->mode = comAdvanced;
     def->set_default_value(new ConfigOptionInts{0});
 
     def = this->add("nozzle_temperature", coInts);
@@ -7322,6 +7335,7 @@ void PrintConfigDef::init_fff_params()
     def->full_label = L("Top shell thickness");
     def->sidetext = L("mm");	// millimeters, CIS languages need translation
     def->min = 0;
+    def->mode = comAdvanced;
     def->set_default_value(new ConfigOptionFloat(0.6));
 
     def           = this->add("separated_infills", coBool);
@@ -7395,7 +7409,7 @@ void PrintConfigDef::init_fff_params()
     def = this->add("enable_prime_tower", coBool);
     def->label = L("Enable");
     def->tooltip = L("The wiping tower can be used to clean up residue on the nozzle and stabilize the chamber pressure inside the nozzle in order to avoid appearance defects when printing objects.");
-    def->mode = comSimple;
+    def->mode = comAdvanced;
     def->set_default_value(new ConfigOptionBool(false));
 
     def = this->add("prime_tower_enable_framework", coBool);
@@ -7444,7 +7458,7 @@ void PrintConfigDef::init_fff_params()
     def->tooltip = L("This is the volume of material to prime the extruder with on the tower.");
     def->sidetext = L(u8"mm³");	// cubic millimeters, CIS languages need translation
     def->min = 1.0;
-    def->mode = comSimple;
+    def->mode = comAdvanced;
     def->set_default_value(new ConfigOptionFloat(45.));
 
     // Dual-extruder purge control: Default reproduces current behaviour
@@ -7484,7 +7498,7 @@ void PrintConfigDef::init_fff_params()
     def->tooltip = L("This is the width of prime towers.");
     def->sidetext = L("mm");	// millimeters, CIS languages need translation
     def->min = 2.0;
-    def->mode = comSimple;
+    def->mode = comAdvanced;
     def->set_default_value(new ConfigOptionFloat(60.));
 
     def = this->add("wipe_tower_rotation_angle", coFloat);
@@ -7620,12 +7634,14 @@ void PrintConfigDef::init_fff_params()
     def->category = L("Flush options");
     def->label = L("Flush into objects' infill");
     def->tooltip = L("Purging after filament change will be done inside objects\' infills. This may lower the amount of waste and decrease the print time. If the walls are printed with transparent filament, the mixed color infill will be visible. It will not take effect unless the prime tower is enabled.");
+    def->mode = comAdvanced;
     def->set_default_value(new ConfigOptionBool(false));
 
     def = this->add("flush_into_support", coBool);
     def->category = L("Flush options");
     def->label = L("Flush into objects' support");
     def->tooltip = L("Purging after filament change will be done inside objects\' support. This may lower the amount of waste and decrease the print time. It will not take effect unless a prime tower is enabled.");
+    def->mode = comAdvanced;
     def->set_default_value(new ConfigOptionBool(true));
 
     def = this->add("flush_into_objects", coBool);
@@ -7634,6 +7650,7 @@ void PrintConfigDef::init_fff_params()
     def->tooltip = L("This object will be used to purge the nozzle after a filament change to save filament and decrease the print time. "
         "Colors of the objects will be mixed as a result. "
         "It will not take effect unless the prime tower is enabled.");
+    def->mode = comAdvanced;
     def->set_default_value(new ConfigOptionBool(false));
 
     def = this->add("wipe_tower_bridging", coFloat);

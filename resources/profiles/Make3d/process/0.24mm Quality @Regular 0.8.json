@@ -1,0 +1,44 @@
+{
+    "type": "process",
+    "setting_id": "M3DQLTY248",
+    "inherits": "fdm_process_common",
+    "name": "0.24mm Quality @Regular 0.8",
+    "from": "system",
+    "instantiation": "true",
+    "compatible_printers": [
+        "Pratham 3.0 Nozzle 0.8",
+        "Pratham 5.0 Nozzle 0.8",
+        "Pratham 6.0 Nozzle 0.8",
+        "Pratham X Nozzle 0.8",
+        "Pratham XL Nozzle 0.8"
+    ],
+    
+    "initial_layer_print_height": "0.3",
+    "layer_height": "0.24",
+    "bottom_shell_layers": "5",
+    "top_shell_layers": "5",
+
+    "line_width": "0.84",
+    "initial_layer_line_width": "1.0",
+    "outer_wall_line_width": "0.84",
+    "inner_wall_line_width": "0.9",
+    "top_surface_line_width": "0.84",
+    "sparse_infill_line_width": "0.86",
+    "internal_solid_infill_line_width": "0.86",
+    "support_line_width": "0.8",
+
+    "sparse_infill_density": "15%",
+    "sparse_infill_pattern": "grid",
+    
+    "support_top_z_distance": "0.22",
+    "support_bottom_z_distance": "0.24",
+
+    "max_travel_detour_distance": "150",
+
+    "wall_loops": "3",
+
+    "outer_wall_speed": "40",
+    "inner_wall_speed": "50",
+    "infill_speed": "50",
+    "initial_layer_speed": "25"
+}

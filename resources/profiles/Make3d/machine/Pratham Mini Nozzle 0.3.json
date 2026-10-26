@@ -1,0 +1,22 @@
+{
+    "type": "machine",
+    "setting_id": "M3DMINI03",
+    "name": "Pratham Mini Nozzle 0.3",
+    "from": "system",
+    "inherits": "fdm_pratham_regular_common",
+    "default_print_profile": "0.12mm Standard @Regular 0.3",
+    "printer_model": "Pratham Mini",
+    "printer_variant": "0.3",
+    "instantiation": "true",
+    "printable_area": [
+		"0x0",
+		"170x0",
+		"170x170",
+		"0x170"
+	],
+    "printable_height": "170",
+    
+    "nozzle_diameter":["0.3"],
+    "min_layer_height": "0.06",
+    "max_layer_height": "0.24"
+}

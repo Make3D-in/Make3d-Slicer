@@ -49,3 +49,9 @@ internal_docs/
 # Python bytecode
 __pycache__/
 *.pyc
+
+# Installers and build outputs
+installer/output/
+*.exe
+*.zip
+scratch/

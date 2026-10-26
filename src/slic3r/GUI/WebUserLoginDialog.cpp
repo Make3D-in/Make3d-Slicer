@@ -3,6 +3,7 @@
 #include <string.h>
 #include "I18N.hpp"
 #include "libslic3r/AppConfig.hpp"
+#include "libslic3r/Utils.hpp"
 #include "slic3r/GUI/wxExtensions.hpp"
 #include "slic3r/GUI/GUI_App.hpp"
 #include "slic3r/Utils/NetworkAgent.hpp"
@@ -25,8 +26,10 @@
 #include <nlohmann/json.hpp>
 #include "MainFrame.hpp"
 #include <boost/dll.hpp>
+#include <boost/filesystem.hpp>
 
 #include <sstream>
+#include <fstream>
 #include <slic3r/GUI/Widgets/WebView.hpp>
 #include <slic3r/GUI/Widgets/HyperLink.hpp> // ORCA
 using namespace std;
@@ -86,99 +89,42 @@ int ZUserLogin::ensure_loopback_port()
 }
 
 ZUserLogin::ZUserLogin(std::shared_ptr<ICloudServiceAgent> cloud_agent)
-    : wxDialog((wxWindow*) (wxGetApp().mainframe), wxID_ANY, "OrcaSlicer"), m_cloud_agent(cloud_agent)
+    : wxDialog((wxWindow*) (wxGetApp().mainframe), wxID_ANY, "Make3D Cloud Login"), m_cloud_agent(cloud_agent)
 {
     SetBackgroundColour(*wxWHITE);
 
-    if (!m_cloud_agent) {
-        wxBoxSizer* m_sizer_main = new wxBoxSizer(wxVERTICAL);
-        auto m_line_top = new wxPanel(this, wxID_ANY, wxDefaultPosition, wxSize(-1, 1));
-        m_line_top->SetBackgroundColour(wxColour(166, 169, 170));
-        m_sizer_main->Add(m_line_top, 0, wxEXPAND, 0);
+    wxFileName fn(from_u8(resources_dir()) + "/web/auth/index.html");
+    TargetUrl = wxFileSystem::FileNameToURL(fn);
 
-        auto* m_message = new wxStaticText(this, wxID_ANY,
-                                          _L("Cloud agent is not available. Please restart OrcaSlicer and try again."),
-                                          wxDefaultPosition, wxDefaultSize, 0);
-        m_message->SetForegroundColour(*wxBLACK);
-        m_message->Wrap(FromDIP(360));
-        m_sizer_main->Add(m_message, 0, wxALIGN_CENTER | wxALL, FromDIP(15));
+    BOOST_LOG_TRIVIAL(info) << "Make3D Cloud Login URL = " << TargetUrl.ToStdString();
 
-        m_sizer_main->Add(0, 0, 1, wxBOTTOM, 10);
-        SetSizer(m_sizer_main);
-        m_sizer_main->SetSizeHints(this);
-        Layout();
-        Fit();
-        CentreOnParent();
-        wxGetApp().UpdateDlgDarkUI(this);
+    m_bbl_user_agent = wxString::Format("BBL-Slicer/v%s", wxGetApp().get_bbl_client_version());
+
+    // Create the webview for Make3D Cloud Supabase Auth
+    m_browser = WebView::CreateWebView(this, TargetUrl);
+    if (m_browser == nullptr) {
+        wxLogError("Could not init m_browser for ZUserLogin");
         return;
     }
+    m_browser->Hide();
+    m_browser->SetSize(0, 0);
 
-    const auto bblnetwork_enabled = wxGetApp().app_config->get_bool("installed_networking");
-    if (m_cloud_agent->get_id() == BBL_CLOUD_PROVIDER && !bblnetwork_enabled) {
+    // Connect the webview events
+    Bind(wxEVT_WEBVIEW_NAVIGATING, &ZUserLogin::OnNavigationRequest, this, m_browser->GetId());
+    Bind(wxEVT_WEBVIEW_NAVIGATED, &ZUserLogin::OnNavigationComplete, this, m_browser->GetId());
+    Bind(wxEVT_WEBVIEW_LOADED, &ZUserLogin::OnDocumentLoaded, this, m_browser->GetId());
+    Bind(wxEVT_WEBVIEW_ERROR, &ZUserLogin::OnError, this, m_browser->GetId());
+    Bind(wxEVT_WEBVIEW_NEWWINDOW, &ZUserLogin::OnNewWindow, this, m_browser->GetId());
+    Bind(wxEVT_WEBVIEW_TITLE_CHANGED, &ZUserLogin::OnTitleChanged, this, m_browser->GetId());
+    Bind(wxEVT_WEBVIEW_FULLSCREEN_CHANGED, &ZUserLogin::OnFullScreenChanged, this, m_browser->GetId());
+    Bind(wxEVT_WEBVIEW_SCRIPT_MESSAGE_RECEIVED, &ZUserLogin::OnScriptMessage, this, m_browser->GetId());
 
-        SetBackgroundColour(*wxWHITE);
+    // UI
+    SetTitle(_L("Make3D Cloud"));
+    wxSize pSize = FromDIP(wxSize(480, 640));
+    SetSize(pSize);
 
-        wxBoxSizer* m_sizer_main = new wxBoxSizer(wxVERTICAL);
-        auto m_line_top = new wxPanel(this, wxID_ANY, wxDefaultPosition, wxSize(-1, 1));
-        m_line_top->SetBackgroundColour(wxColour(166, 169, 170));
-        m_sizer_main->Add(m_line_top, 0, wxEXPAND, 0);
-
-        auto* m_message = new wxStaticText(this, wxID_ANY, _L("Bambu Network plug-in not detected."), wxDefaultPosition, wxDefaultSize, 0);
-        m_message->SetForegroundColour(*wxBLACK);
-        m_message->Wrap(FromDIP(360));
-
-        // ORCA standardized HyperLink
-        auto m_download_hyperlink = new HyperLink(this, _L("Click here to download it."));
-        m_download_hyperlink->Bind(wxEVT_LEFT_DOWN, [this](wxMouseEvent& event) {
-            this->Close();
-            wxGetApp().ShowDownNetPluginDlg();
-        });
-        m_sizer_main->Add(m_message, 0, wxALIGN_CENTER | wxALL, FromDIP(15));
-        m_sizer_main->Add(m_download_hyperlink, 0, wxALIGN_CENTER | wxALL, FromDIP(10));
-        m_sizer_main->Add(0, 0, 1, wxBOTTOM, 10);
-
-        SetSizer(m_sizer_main);
-        m_sizer_main->SetSizeHints(this);
-        Layout();
-        Fit();
-        CentreOnParent();
-    } else {
-        // Get the login URL from the injected cloud service agent
-        wxString strlang = wxGetApp().current_language_code_safe();
-        strlang.Replace("_", "-");
-        TargetUrl = wxString::FromUTF8(m_cloud_agent->get_cloud_login_url(strlang.ToStdString()));
-
-        BOOST_LOG_TRIVIAL(info) << "login url = " << TargetUrl.ToStdString();
-
-        m_bbl_user_agent = wxString::Format("BBL-Slicer/v%s", wxGetApp().get_bbl_client_version());
-
-        // Create the webview
-        m_browser = WebView::CreateWebView(this, TargetUrl);
-        if (m_browser == nullptr) {
-            wxLogError("Could not init m_browser");
-            return;
-        }
-        m_browser->Hide();
-        m_browser->SetSize(0, 0);
-
-        // Connect the webview events
-        Bind(wxEVT_WEBVIEW_NAVIGATING, &ZUserLogin::OnNavigationRequest, this, m_browser->GetId());
-        Bind(wxEVT_WEBVIEW_NAVIGATED, &ZUserLogin::OnNavigationComplete, this, m_browser->GetId());
-        Bind(wxEVT_WEBVIEW_LOADED, &ZUserLogin::OnDocumentLoaded, this, m_browser->GetId());
-        Bind(wxEVT_WEBVIEW_ERROR, &ZUserLogin::OnError, this, m_browser->GetId());
-        Bind(wxEVT_WEBVIEW_NEWWINDOW, &ZUserLogin::OnNewWindow, this, m_browser->GetId());
-        Bind(wxEVT_WEBVIEW_TITLE_CHANGED, &ZUserLogin::OnTitleChanged, this, m_browser->GetId());
-        Bind(wxEVT_WEBVIEW_FULLSCREEN_CHANGED, &ZUserLogin::OnFullScreenChanged, this, m_browser->GetId());
-        Bind(wxEVT_WEBVIEW_SCRIPT_MESSAGE_RECEIVED, &ZUserLogin::OnScriptMessage, this, m_browser->GetId());
-
-        // UI
-        SetTitle(_L("Login"));
-        // Set a more sensible size for web browsing
-        wxSize pSize = FromDIP(wxSize(650, 840));
-        SetSize(pSize);
-
-        CentreOnParent();
-    }
+    CentreOnParent();
     wxGetApp().UpdateDlgDarkUI(this);
 }
 
@@ -314,10 +260,46 @@ void ZUserLogin::OnFullScreenChanged(wxWebViewEvent &evt)
 void ZUserLogin::OnScriptMessage(wxWebViewEvent &evt)
 {
     wxString str_input = evt.GetString();
+    std::string raw = into_u8(str_input);
+    BOOST_LOG_TRIVIAL(info) << "[Make3D Auth] ZUserLogin::OnScriptMessage raw: " << raw;
 
     try {
-        json j = json::parse(into_u8(str_input));
-        wxString strCmd = j["command"];
+        raw.erase(0, raw.find_first_not_of(" \t\r\n"));
+        raw.erase(raw.find_last_not_of(" \t\r\n") + 1);
+
+        json j;
+        try {
+            j = json::parse(raw);
+        } catch (const std::exception& e) {
+            BOOST_LOG_TRIVIAL(error) << "[Make3D Auth] ZUserLogin::OnScriptMessage json::parse error: " << e.what();
+            return;
+        }
+
+        // Unpack double-encoded JSON string
+        if (j.is_string()) {
+            try {
+                j = json::parse(j.get<std::string>());
+            } catch (...) {}
+        }
+
+        // Unpack wx wrapper object {"handler":"wx","raw":"..."}
+        if (j.is_object() && j.contains("raw")) {
+            if (j["raw"].is_string()) {
+                try {
+                    j = json::parse(j["raw"].get<std::string>());
+                } catch (...) {}
+            } else if (j["raw"].is_object()) {
+                j = j["raw"];
+            }
+        }
+
+        if (!j.is_object() || !j.contains("command")) {
+            BOOST_LOG_TRIVIAL(warning) << "[Make3D Auth] ZUserLogin::OnScriptMessage payload missing command";
+            return;
+        }
+
+        wxString strCmd = wxString::FromUTF8(j["command"].is_string() ? j["command"].get<std::string>().c_str() : "");
+        BOOST_LOG_TRIVIAL(info) << "[Make3D Auth] ZUserLogin::OnScriptMessage parsed command: " << strCmd.ToStdString();
         
         if (m_cloud_agent && strCmd == "get_login_cmd") {
             // Return login config (backend_url, apikey, pkce)
@@ -451,24 +433,34 @@ void ZUserLogin::OnScriptMessage(wxWebViewEvent &evt)
             login_j["data"]["user"]["avatar"]    = user_avatar;
             std::string message_json = login_j.dump();
 
-            // End modal dialog first to unblock event loop before processing callbacks
+            // Execute immediately so AppConfig is saved and homepage updated
+            wxGetApp().handle_script_message(message_json, provider);
             EndModal(wxID_OK);
-
-            // Handle message after modal dialog ends to avoid deadlock
-            // Use wxTheApp->CallAfter to ensure it runs after modal loop exits
-            wxTheApp->CallAfter([message_json, provider]() { wxGetApp().handle_script_message(message_json, provider); });
+            wxTheApp->CallAfter([provider]() { wxGetApp().get_login_info(provider); });
         }
         else if (strCmd == "user_login") {
-            j["data"]["autotest_token"] = m_AutotestToken;
+            if (j.contains("data") && j["data"].is_object()) {
+                j["data"]["autotest_token"] = m_AutotestToken;
+            }
             std::string message_json = j.dump();
+            const auto provider = m_cloud_agent ? m_cloud_agent->get_id() : ORCA_CLOUD_PROVIDER;
+            BOOST_LOG_TRIVIAL(info) << "[Make3D Auth] user_login: processing immediately for provider " << provider;
 
-            // End modal dialog first to unblock event loop before processing callbacks
+            // Execute immediately so AppConfig is saved and homepage updated
+            wxGetApp().handle_script_message(message_json, provider);
+
+            // Trigger homepage UI refresh immediately
+            wxTheApp->CallAfter([provider]() {
+                wxGetApp().get_login_info(provider);
+            });
+
+            // Only close modal if explicitly requested by payload (e.g. close_dialog: true)
+            if (j.contains("close_dialog") && j["close_dialog"].is_boolean() && j["close_dialog"].get<bool>()) {
+                EndModal(wxID_OK);
+            }
+        }
+        else if (strCmd == "close_dialog" || strCmd == "continue_slicer" || strCmd == "dismiss") {
             EndModal(wxID_OK);
-
-            // Handle message after modal dialog ends to avoid deadlock
-            // Use wxTheApp->CallAfter to ensure it runs after modal loop exits
-            const auto provider = m_cloud_agent->get_id();
-            wxTheApp->CallAfter([message_json, provider]() { wxGetApp().handle_script_message(message_json, provider); });
         }
         else if (strCmd == "get_localhost_url") {
             int loopback_port = ensure_loopback_port();
@@ -504,6 +496,135 @@ void ZUserLogin::OnScriptMessage(wxWebViewEvent &evt)
                     });
             }
             return;
+        }
+        // ── Make3D Cloud Preset Sync: Upload ──────────────────────────────
+        else if (strCmd == "get_user_presets_json") {
+            // Read local user preset files for the active user and return as JSON
+            std::string sequence_id;
+            std::string user_folder;
+            if (j.contains("sequence_id")) sequence_id = j["sequence_id"].get<std::string>();
+            if (j.contains("user_id"))     user_folder = j["user_id"].get<std::string>();
+            if (user_folder.empty() && wxGetApp().app_config) {
+                user_folder = wxGetApp().app_config->get("preset_folder");
+            }
+            if (user_folder.empty()) user_folder = "default";
+            for (auto& c : user_folder) {
+                if (c == '/' || c == '\\' || c == ':' || c == '*' || c == '?' || c == '"' || c == '<' || c == '>' || c == '|' || c == '@' || c == '.')
+                    c = '_';
+            }
+
+            CallAfter([this, sequence_id, user_folder] {
+                try {
+                    namespace fs = boost::filesystem;
+                    std::string data_dir_str = Slic3r::data_dir();
+                    json presets_array = json::array();
+                    const std::vector<std::string> preset_types = {"process", "filament", "machine"};
+
+                    // Only scan the user's own isolated folder (NO fallback to default)
+                    // This prevents guest/default presets from mixing with user presets
+                    fs::path presets_root = fs::path(data_dir_str) / "user" / user_folder;
+                    if (fs::exists(presets_root)) {
+                        for (const auto& pt_name : preset_types) {
+                            fs::path type_dir = presets_root / pt_name;
+                            if (!fs::exists(type_dir)) continue;
+                            for (fs::directory_iterator it(type_dir); it != fs::directory_iterator(); ++it) {
+                                if (it->path().extension() != ".json") continue;
+                                std::string stem_name = it->path().stem().string();
+                                try {
+                                    std::ifstream ifs(it->path().string());
+                                    if (!ifs.is_open()) continue;
+                                    std::string content((std::istreambuf_iterator<char>(ifs)),
+                                                         std::istreambuf_iterator<char>());
+                                    json preset_j = json::parse(content);
+                                    json entry;
+                                    entry["preset_type"] = pt_name;
+                                    entry["preset_name"] = stem_name;
+                                    entry["preset_data"] = preset_j;
+                                    presets_array.push_back(entry);
+                                } catch (...) {}
+                            }
+                        }
+                    }
+
+                    json resp;
+                    resp["command"]     = "presets_data";
+                    resp["sequence_id"] = sequence_id;
+                    resp["presets"]     = presets_array;
+                    wxString js = wxString::Format("window.postMessage(%s)", resp.dump());
+                    RunScript(js);
+                    BOOST_LOG_TRIVIAL(info) << "[Make3D Sync] Exported " << presets_array.size() << " presets for user " << user_folder;
+                } catch (std::exception& e) {
+                    BOOST_LOG_TRIVIAL(error) << "[Make3D Sync] get_user_presets_json failed: " << e.what();
+                }
+            });
+        }
+        // ── Make3D Cloud Preset Sync: Download ────────────────────────────
+        else if (strCmd == "import_cloud_presets") {
+            if (!j.contains("presets")) return;
+            json presets_to_import = j["presets"];
+            std::string user_folder;
+            if (j.contains("user_id")) user_folder = j["user_id"].get<std::string>();
+            if (user_folder.empty() && wxGetApp().app_config) {
+                user_folder = wxGetApp().app_config->get("preset_folder");
+            }
+            if (user_folder.empty()) user_folder = "default";
+            for (auto& c : user_folder) {
+                if (c == '/' || c == '\\' || c == ':' || c == '*' || c == '?' || c == '"' || c == '<' || c == '>' || c == '|' || c == '@' || c == '.')
+                    c = '_';
+            }
+
+            CallAfter([this, presets_to_import, user_folder] {
+                try {
+                    namespace fs = boost::filesystem;
+                    std::string data_dir_str = Slic3r::data_dir();
+                    // SAVE TO ISOLATED USER FOLDER
+                    fs::path presets_root = fs::path(data_dir_str) / "user" / user_folder;
+                    int imported = 0;
+
+                    for (const auto& entry : presets_to_import) {
+                        if (!entry.contains("preset_type") || !entry.contains("preset_name") || !entry.contains("preset_data"))
+                            continue;
+                        std::string pt_name   = entry["preset_type"].get<std::string>();
+                        std::string pt_fname  = entry["preset_name"].get<std::string>();
+                        json        pt_data   = entry["preset_data"];
+                        // Sanitize filename
+                        for (auto& c : pt_fname) {
+                            if (c == '/' || c == '\\' || c == ':' || c == '*' || c == '?' || c == '"' || c == '<' || c == '>' || c == '|')
+                                c = '_';
+                        }
+                        fs::path type_dir = presets_root / pt_name;
+                        fs::create_directories(type_dir);
+                        fs::path out_path = type_dir / (pt_fname + ".json");
+                        std::ofstream ofs(out_path.string());
+                        if (ofs.is_open()) {
+                            ofs << pt_data.dump(2);
+                            imported++;
+                        }
+                    }
+
+                    // Reload user presets into active slicer UI immediately
+                    if (wxGetApp().app_config) {
+                        wxGetApp().app_config->set("preset_folder", user_folder);
+                    }
+                    if (wxGetApp().preset_bundle) {
+                        wxGetApp().preset_bundle->update_user_presets_directory(user_folder);
+                        wxGetApp().preset_bundle->load_user_presets(user_folder, ForwardCompatibilitySubstitutionRule::Enable);
+                    }
+                    if (wxGetApp().mainframe) {
+                        wxGetApp().mainframe->update_side_preset_ui();
+                    }
+
+                    BOOST_LOG_TRIVIAL(info) << "[Make3D Sync] Imported " << imported << " presets for user " << user_folder;
+                    // Notify JS of completion
+                    json resp;
+                    resp["command"] = "import_presets_done";
+                    resp["count"]   = imported;
+                    wxString js = wxString::Format("window.postMessage(%s)", resp.dump());
+                    RunScript(js);
+                } catch (std::exception& e) {
+                    BOOST_LOG_TRIVIAL(error) << "[Make3D Sync] import_cloud_presets failed: " << e.what();
+                }
+            });
         }
     } catch (std::exception &e) {
         wxMessageBox(e.what(), _L("parse json failed"), wxICON_WARNING);

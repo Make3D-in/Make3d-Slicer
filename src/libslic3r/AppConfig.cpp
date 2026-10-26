@@ -40,7 +40,7 @@ using namespace nlohmann;
 
 namespace Slic3r {
 
-static const std::string VERSION_CHECK_URL = "https://check-version.orcaslicer.com/latest";
+static const std::string VERSION_CHECK_URL = "https://api.github.com/repos/Make3D-in/Make3d-Slicer/releases";
 static const std::string PROFILE_UPDATE_URL = "https://check-version.orcaslicer.com/profile";
 static const std::string MODELS_STR = "models";
 
@@ -169,7 +169,7 @@ void AppConfig::set_defaults()
 #endif
 
         if (get("single_instance").empty())
-            set_bool("single_instance", false);
+            set_bool("single_instance", true);
 
 #ifdef SUPPORT_REMEMBER_OUTPUT_PATH
         if (get("remember_output_path").empty())
@@ -351,7 +351,7 @@ void AppConfig::set_defaults()
 
 #ifdef SUPPORT_DARK_MODE
     if (get("dark_color_mode").empty())
-        set("dark_color_mode", "0");
+        set("dark_color_mode", "1"); // Make3D Slicer: default to Dark Mode
 #endif
 
 //#ifdef SUPPORT_SYS_MENU
@@ -397,7 +397,7 @@ void AppConfig::set_defaults()
         set_bool("stealth_mode", false);
     }
     if (get("hide_login_side_panel").empty()) {
-        set_bool("hide_login_side_panel", false);
+        set_bool("hide_login_side_panel", true);
     }
     if (get("allow_abnormal_storage").empty()) {
         set_bool("allow_abnormal_storage", false);

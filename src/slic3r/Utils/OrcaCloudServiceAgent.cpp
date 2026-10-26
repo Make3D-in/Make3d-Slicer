@@ -1986,6 +1986,11 @@ bool OrcaCloudServiceAgent::set_user_session(const json& session_json, bool noti
         // Nested format (Orca cloud / GoTrue response)
         const auto& user = session_json["user"];
         user_id          = get_json_string_field(user, "id");
+        if (user_id.empty()) user_id = get_json_string_field(user, "uid");
+        if (username.empty()) username = get_json_string_field(user, "name");
+        if (username.empty()) username = get_json_string_field(user, "account");
+        if (username.empty()) username = get_json_string_field(user, "email");
+        if (nickname.empty()) nickname = username;
 
         if (user.contains("user_metadata") && user["user_metadata"].is_object()) {
             const auto& meta = user["user_metadata"];
@@ -2000,6 +2005,8 @@ bool OrcaCloudServiceAgent::set_user_session(const json& session_json, bool noti
     } else {
         // Flat format (WebView direct token flow)
         user_id  = get_json_string_field(session_json, "user_id");
+        if (user_id.empty()) user_id = get_json_string_field(session_json, "uid");
+        if (user_id.empty()) user_id = get_json_string_field(session_json, "id");
         username = get_json_string_field(session_json, "username");
         nickname = resolve_display_name(get_json_string_field(session_json, "display_name"),
                                         get_json_string_field(session_json, "nickname"), get_json_string_field(session_json, "full_name"),

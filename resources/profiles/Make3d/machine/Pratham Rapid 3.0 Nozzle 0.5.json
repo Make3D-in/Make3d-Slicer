@@ -1,0 +1,23 @@
+{
+    "type": "machine",
+    "setting_id": "M3DRPDP3005",
+    "name": "Pratham Rapid 3.0 Nozzle 0.5",
+    "from": "system",
+    "inherits": "fdm_rapid_common",
+    "default_print_profile": "0.25mm Standard @Rapid 0.5.json",
+    "printer_model": "Pratham Rapid 3.0",
+    "printer_variant": "0.5",
+    "instantiation": "true",
+    "printable_area": [
+		"0x0",
+		"300x0",
+		"300x300",
+		"0x300"
+	],
+    "printable_height": "300",
+    
+    "nozzle_diameter":["0.5"],
+    "min_layer_height": "0.1",
+    "max_layer_height": "0.4"
+    
+}

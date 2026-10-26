@@ -1,0 +1,22 @@
+{
+    "type": "machine",
+    "setting_id": "M3DDESK04",
+    "name": "Pratham Desktop Nozzle 0.4",
+    "from": "system",
+    "inherits": "fdm_pratham_regular_common",
+    "default_print_profile": "0.20mm Standard @Regular 0.4",
+    "printer_model": "Pratham Desktop",
+    "printer_variant": "0.4",
+    "instantiation": "true",
+    "printable_area": [
+		"0x0",
+		"200x0",
+		"200x200",
+		"0x200"
+	],
+    "printable_height": "250",
+    
+    "nozzle_diameter":["0.4"],
+    "min_layer_height": "0.08",
+    "max_layer_height": "0.32"
+}

@@ -1,0 +1,37 @@
+{
+    "type": "filament",
+    "name": "Make3d ASA",
+    "inherits": "fdm_common_asa",
+    "from": "system",
+    "filament_id": "M3DREGASA",
+    "setting_id": "REGASA",
+    "instantiation": "true",
+    "version": "2.3.0.3",
+
+    
+    "filament_vendor": ["Make3d"],
+    "filament_type": ["ASA"],
+
+    "filament_flow_ratio": ["0.92"],
+
+    "hot_plate_temp_initial_layer" : ["100"],
+    "hot_plate_temp" : ["100"],
+
+    "textured_plate_temp_initial_layer" : ["100"],
+    "textured_plate_temp" : ["100"],
+
+    "filament_max_volumetric_speed": ["16"],
+    
+    
+    "fan_min_speed": ["0"],
+    "fan_cooling_layer_time": ["30"],
+    "fan_max_speed": ["4"],
+    "slow_down_layer_time": ["12"],
+    "slow_down_for_layer_cooling": ["1"],
+    "dont_slow_down_outer_wall":"1",
+    "slow_down_min_speed": ["20"],
+    "overhang_fan_threshold": ["95%"],
+    "overhang_fan_speed": ["7"],
+
+    "activate_air_filtration": ["0"]
+}

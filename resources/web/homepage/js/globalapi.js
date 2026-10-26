@@ -269,12 +269,18 @@ function IsInSlicer()
 
 function SendWXMessage( strMsg )
 {
-	let bCheck=IsInSlicer();
-	
-	if(bCheck!=null)
-	{
-		window.wx.postMessage(strMsg);
-	}
+	try {
+		if (window.wx && window.wx.postMessage) {
+			window.wx.postMessage(strMsg);
+			return;
+		}
+	} catch(e) {}
+	try {
+		if (window.chrome && window.chrome.webview && window.chrome.webview.postMessage) {
+			window.chrome.webview.postMessage(strMsg);
+			return;
+		}
+	} catch(e) {}
 }
 
 

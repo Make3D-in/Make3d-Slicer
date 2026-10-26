@@ -1,0 +1,13 @@
+{
+    "type": "machine_model",
+    "name": "Pratham Rapid 3.0",
+    "model_id": "M3DRPD30",
+    "nozzle_diameter": "0.4;0.5",
+    "machine_tech": "FFF",
+    "family": "Make3d",
+    "default_bed_type": "",
+    "bed_model": "Rapid 3.0 Build Plate.stl",
+    "bed_texture": "Make3d Bed Texture.png",
+    "hotend_model": "",
+    "default_materials": "Make3d PLA+ Rapid"
+}

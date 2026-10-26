@@ -1,0 +1,46 @@
+{
+    "type": "process",
+    "setting_id": "M3DHD083004",
+    "inherits": "fdm_process_common",
+    "name": "0.08mm High Detail @Regular 0.4",
+    "from": "system",
+    "instantiation": "true",
+    "compatible_printers": [
+        "Pratham 3.0 Nozzle 0.4",
+        "Pratham Mini Nozzle 0.4",
+        "Pratham Desktop Nozzle 0.4",
+        "Pratham 5.0 Nozzle 0.4",
+        "Pratham 6.0 Nozzle 0.4",
+        "Pratham X Nozzle 0.4",
+        "Pratham XL Nozzle 0.4"
+    ],
+    
+    "initial_layer_print_height": "0.2",
+    "layer_height": "0.08",
+    "bottom_shell_layers": "10",
+    "top_shell_layers": "10",
+
+    "line_width": "0.42",
+    "initial_layer_line_width": "0.5",
+    "outer_wall_line_width": "0.43",
+    "inner_wall_line_width": "0.43",
+    "top_surface_line_width": "0.43",
+    "sparse_infill_line_width": "0.43",
+    "internal_solid_infill_line_width": "0.43",
+    "support_line_width": "0.4",
+
+    "sparse_infill_density": "20%",
+    "sparse_infill_pattern": "grid",
+    
+    "support_top_z_distance": "0.06",
+    "support_bottom_z_distance": "0.12",
+
+    "max_travel_detour_distance": "300",
+
+    "wall_loops": "2",
+
+    "outer_wall_speed": "30",
+    "inner_wall_speed": "35",
+    "infill_speed": "40",
+    "initial_layer_speed": "20"
+}

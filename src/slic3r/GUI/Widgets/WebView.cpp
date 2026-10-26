@@ -254,6 +254,16 @@ static WebViewRef *webview_ref(wxWebView *webView)
 wxWebView* WebView::CreateWebView(wxWindow * parent, wxString const & url)
 {
 #if wxUSE_WEBVIEW_EDGE
+    // Ensure WebView2 uses a writable user data folder in LocalAppData,
+    // avoiding permission/access denied errors when installed in C:\Program Files
+    wxString localDataDir = wxStandardPaths::Get().GetUserLocalDataDir();
+    wxFileName udir(localDataDir, "");
+    udir.AppendDir("webview2");
+    if (!udir.DirExists()) {
+        udir.Mkdir(wxS_DIR_DEFAULT, wxPATH_MKDIR_FULL);
+    }
+    wxSetEnv("WEBVIEW2_USER_DATA_FOLDER", udir.GetFullPath());
+
     // Check if a fixed version of edge is present in
     // $executable_path/edge_fixed and use it
     wxFileName edgeFixedDir(wxStandardPaths::Get().GetExecutablePath());

@@ -32,16 +32,16 @@
 	</div>
 	<div class="back" onclick="document.getElementById('SidebarContainer').setAttribute('open', '0')"></div>
 </div>
-<div class="SidebarBtn ButtonStyleRegular" onclick="document.getElementById('SidebarContainer').setAttribute('open', '1')">
+<div class="SidebarBtn ButtonStyleRegular" style="display: none !important;" onclick="document.getElementById('SidebarContainer').setAttribute('open', '1')">
 	<div class="icon16"></div>
 </div>
 
-<div class="search" hasvalue="0">
+<div class="search" hasvalue="0" style="display: none !important;">
 	<div class="search-icon icon16"></div>
 	<input type="text" class="searchTerm" placeholder=" " oninput="textInput(this)">
 	<span class="search-placeholder trans">Search...</span>
 </div>
-<div class="LayoutSelector">
+<div class="LayoutSelector" style="display: none !important;">
 	<div class="TabGroup">
 		<div class="TabButton" onclick="LayoutMode('compact-list')" ><div class="icon16"></div></div>
 		<div class="TabButton" onclick="LayoutMode('compact-cover')"><div class="icon16"></div></div>
