@@ -2,7 +2,7 @@
 ; Inno Setup 6 Script
 
 #define MyAppName "Make3D Slicer"
-#define MyAppVersion "1.0.1"
+#define MyAppVersion "1.0.2"
 #define MyAppPublisher "Make3D"
 #define MyAppURL "https://make3d.in"
 #define MyAppExeName "Make3D Slicer.exe"
@@ -21,7 +21,7 @@ DefaultGroupName={#MyAppName}
 AllowNoIcons=yes
 LicenseFile={#SourceDir}\LICENSE.txt
 OutputDir=D:\Orca_modify\installer\output
-OutputBaseFilename=Make3D_Slicer_Setup_v1.0.1_Windows_x64
+OutputBaseFilename=Make3D_Slicer_Setup_v1.0.2_Windows_x64
 SetupIconFile=D:\Orca_modify\resources\images\OrcaSlicer.ico
 UninstallDisplayIcon={app}\{#MyAppExeName}
 Compression=lzma2/ultra64

@@ -5,7 +5,7 @@ import shutil
 # Make3D Slicer Distribution Packager
 SRC_DIR = "D:/Orca_modify/build/OrcaSlicer"
 OUTPUT_DIR = "C:/Users/almighty/Desktop"
-VERSION = "v1.0.1"
+VERSION = "v1.0.2"
 
 dist_zip = os.path.join(OUTPUT_DIR, f"Make3D_Slicer_{VERSION}_Windows_x64.zip")
 exclude_dirs = {"include", "lib"}

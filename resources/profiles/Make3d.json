@@ -30,10 +30,6 @@
             "sub_path": "machine/Pratham Rapid 3.0.json" 
         },
         {
-            "name": "Pratham Super",
-            "sub_path": "machine/Pratham Super.json"
-        },
-        {
             "name": "Pratham Mini",
             "sub_path": "machine/Pratham Mini.json"
         },
@@ -509,10 +505,6 @@
         {
             "name": "Pratham Rapid 3.0 Nozzle 0.5",
             "sub_path": "machine/Pratham Rapid 3.0 Nozzle 0.5.json"
-        },
-        {
-            "name": "fdm_super_common",
-            "sub_path": "machine/fdm_super_common.json"
         }
     ]
 }
